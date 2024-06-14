@@ -1,23 +1,47 @@
 using AvtoMigBussines.Authenticate;
 using AvtoMigBussines.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
-
 using System.Text;
+using AvtoMigBussines.Services.Interfaces;
+using AvtoMigBussines.Services.Implementations;
+using AvtoMigBussines.Repositories.Implementations;
+using AvtoMigBussines.Repositories.Interfaces;
+using AvtoMigBussines.CarWash.Repositories.Interfaces;
+using AvtoMigBussines.CarWash.Repositories.Implementations;
+using AvtoMigBussines.CarWash.Services.Interfaces;
+using AvtoMigBussines.CarWash.Services.Implementations;
+using System.Net.WebSockets;
+using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
-// Add services to the container.
 
+// Add services to the container.
+builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<ICarService, CarService>();
+builder.Services.AddScoped<IModelCarRepository, ModelCarRepository>();
+builder.Services.AddScoped<IModelCarService, ModelCarService>();
+builder.Services.AddScoped<IWashOrderRepository, WashOrderRepository>();
+builder.Services.AddScoped<IWashOrderService, WashOrderService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<IWashServiceService, WashServiceService>();
+builder.Services.AddScoped<IWashServiceRepository, WashServiceRepository>();
 builder.Services.AddSwaggerGen(opt =>
 {
-    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MyAPI", Version = "v1" });
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "AvtoMigAPI", Version = "v1" });
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -35,15 +59,14 @@ builder.Services.AddSwaggerGen(opt =>
             {
                 Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
-            new string[]{}
+            new string[] { }
         }
     });
 });
-// функционал, который позвол€ет добавить jwt токен дл€ авторизации
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
@@ -80,6 +103,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddSingleton<WebSocketHandler>();
+builder.Services.AddHttpClient();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -93,12 +118,10 @@ builder.Services.AddControllers()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
+app.UseWebSockets();
+
 app.UseSwagger();
 app.UseSwaggerUI();
-
-//}
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -106,6 +129,26 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Middleware дл€ обработки WebSocket соединений
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/ws")
+    {
+        if (context.WebSockets.IsWebSocketRequest)
+        {
+            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            var handler = context.RequestServices.GetRequiredService<WebSocketHandler>();
+            await handler.AddSocket(webSocket);
+        }
+        else
+        {
+            context.Response.StatusCode = 400;
+        }
+    }
+    else
+    {
+        await next();
+    }
+});
 
 app.Run();
-

@@ -1,4 +1,5 @@
-﻿using AvtoMigBussines.Models;
+﻿using AvtoMigBussines.CarWash.Models;
+using AvtoMigBussines.Models;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
@@ -21,8 +22,11 @@ namespace AvtoMigBussines.Authenticate
         public bool? IsDeleted { get; set; } = false;
         [JsonIgnore]
         public ICollection<AspNetUser>? AspNetUsers { get; set; }
+        [JsonIgnore]
+        public ICollection<WashOrder> WashOrders { get; set; }
         public Organization()
         {
+            WashOrders = new List<WashOrder>();
             AspNetUsers = new List<AspNetUser>();
         }
     }

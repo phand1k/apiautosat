@@ -3,6 +3,7 @@ using AvtoMigBussines.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using AvtoMigBussines.Authenticate;
+using AvtoMigBussines.CarWash.Models;
 
 namespace AvtoMigBussines.Data
 {
@@ -12,8 +13,16 @@ namespace AvtoMigBussines.Data
         {
 
         }
+        public DbSet<WashService> WashServices { get; set; }
+        public DbSet<Service> Services { get; set; }
+        public DbSet<Subscription> Subscriptions { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
+        public DbSet<NotifiactionToken> NotifiactionTokens { get; set; }
+        public DbSet<WashOrder> WashOrders { get; set; }
+        public DbSet<Status> Statuses { get; set; }
         public DbSet<Car> Cars { get; set; }
         public DbSet<ModelCar> ModelCars { get; set; }
+        public DbSet<AspNetUser> AspNetUsers { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

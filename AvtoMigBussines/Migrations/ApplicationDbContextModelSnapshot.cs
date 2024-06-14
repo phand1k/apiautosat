@@ -142,7 +142,104 @@ namespace AvtoMigBussines.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Organization");
+                    b.ToTable("Organizations");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("CarId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CarNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsOvered")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsReturn")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ModelCarId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("CarId");
+
+                    b.HasIndex("ModelCarId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("WashOrders");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsOvered")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Price")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WashOrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("WashOrderId");
+
+                    b.ToTable("WashServices");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.Car", b =>
@@ -183,6 +280,115 @@ namespace AvtoMigBussines.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarId");
+
+                    b.ToTable("ModelCars");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.NotifiactionToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotifiactionTokens");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.Service", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Price")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("Services");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.Status", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Statuses");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.Subscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsReturn")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
@@ -190,7 +396,7 @@ namespace AvtoMigBussines.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("ModelCars");
+                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -335,7 +541,85 @@ namespace AvtoMigBussines.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashOrder", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
+                        .WithMany()
+                        .HasForeignKey("AspNetUserId");
+
+                    b.HasOne("AvtoMigBussines.Models.Car", "Car")
+                        .WithMany()
+                        .HasForeignKey("CarId");
+
+                    b.HasOne("AvtoMigBussines.Models.ModelCar", "ModelCar")
+                        .WithMany()
+                        .HasForeignKey("ModelCarId");
+
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany("WashOrders")
+                        .HasForeignKey("OrganizationId");
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("Car");
+
+                    b.Navigation("ModelCar");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashService", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
+                        .WithMany()
+                        .HasForeignKey("AspNetUserId");
+
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.HasOne("AvtoMigBussines.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId");
+
+                    b.HasOne("AvtoMigBussines.CarWash.Models.WashOrder", "WashOrder")
+                        .WithMany()
+                        .HasForeignKey("WashOrderId");
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("WashOrder");
+                });
+
             modelBuilder.Entity("AvtoMigBussines.Models.ModelCar", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Models.Car", "Car")
+                        .WithMany()
+                        .HasForeignKey("CarId");
+
+                    b.Navigation("Car");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.Service", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
+                        .WithMany()
+                        .HasForeignKey("AspNetUserId");
+
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.Subscription", b =>
                 {
                     b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
                         .WithMany()
@@ -398,6 +682,8 @@ namespace AvtoMigBussines.Migrations
             modelBuilder.Entity("AvtoMigBussines.Authenticate.Organization", b =>
                 {
                     b.Navigation("AspNetUsers");
+
+                    b.Navigation("WashOrders");
                 });
 #pragma warning restore 612, 618
         }

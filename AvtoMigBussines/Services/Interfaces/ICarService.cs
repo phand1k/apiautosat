@@ -6,8 +6,8 @@ namespace AvtoMigBussines.Services.Interfaces
     {
         Task<Car> GetCarByIdAsync(int id);
         Task<IEnumerable<Car>> GetAllCarsAsync();
-        Task<bool> CreateCarAsync(Car product);
-        Task UpdateCarAsync(Car product);
+        Task<bool> CreateCarAsync(Car car);
+        Task UpdateCarAsync(Car car);
         Task DeleteCarAsync(int id);
     }
 }

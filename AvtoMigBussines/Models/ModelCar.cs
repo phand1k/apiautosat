@@ -12,6 +12,6 @@ namespace AvtoMigBussines.Models
         public bool? IsDeleted { get; set; }
         [ForeignKey("CarId")]
         public int? CarId { get; set; }
-        public Organization? Organization { get; set; }
+        public Car? Car { get; set; }
     }
 }
