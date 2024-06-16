@@ -2,9 +2,11 @@
 using AvtoMigBussines.Authenticate.Models;
 using AvtoMigBussines.Services.Implementations;
 using AvtoMigBussines.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using static AvtoMigBussines.Exceptions.CustomException;
 
 namespace AvtoMigBussines.Controllers
@@ -14,9 +16,41 @@ namespace AvtoMigBussines.Controllers
     public class AuthenticateController : Controller
     {
         private readonly IUserService userService;
-        public AuthenticateController(IUserService userService)
+        private readonly UserManager<AspNetUser> userManager;
+        public AuthenticateController(IUserService userService, UserManager<AspNetUser> userManager)
         {
             this.userService = userService;
+            this.userManager = userManager;
+        }
+        private async Task<AspNetUser> GetCurrentUserAsync()
+        {
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(userName))
+            {
+                return null;
+            }
+
+            var aspNetUser = await userService.GetUserByPhoneNumberAsync(userName);
+            if (aspNetUser == null)
+            {
+                return null;
+            }
+
+            var user = await userManager.FindByIdAsync(aspNetUser.Id);
+            return user;
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("GetRole")]
+        public async Task<IActionResult> GetRole()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            var role = await userManager.GetRolesAsync(user);
+            return Ok(role);
         }
         [HttpPost]
         [Route("Login")]

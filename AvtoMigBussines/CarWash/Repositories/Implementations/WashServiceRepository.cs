@@ -1,6 +1,7 @@
 ﻿using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Repositories.Interfaces;
 using AvtoMigBussines.Data;
+using AvtoMigBussines.DTOModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace AvtoMigBussines.CarWash.Repositories.Implementations
@@ -48,9 +49,25 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<WashService>> GetAllWashServicesOnOrder(int? orderId)
+        {
+            return await _context.WashServices.Include(x=>x.Service).
+                Where(x=>x.WashOrderId == orderId && x.IsDeleted == false).ToListAsync();
+        }
+
         public async Task<WashService> GetByIdAsync(int id)
         {
             return await _context.WashServices.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+        }
+
+        public async Task<int?> GetCountAllServices(int? orderId)
+        {
+            return await _context.WashServices.Where(x=>x.WashOrderId == orderId && x.IsDeleted == false).CountAsync();
+        }
+
+        public async Task<double?> GetSummAllServices(int? orderId)
+        {
+            return await _context.WashServices.Where(x=>x.WashOrderId == orderId && x.IsDeleted == false).Select(x=>x.Price).SumAsync();
         }
 
         public async Task UpdateAsync(WashService washService)

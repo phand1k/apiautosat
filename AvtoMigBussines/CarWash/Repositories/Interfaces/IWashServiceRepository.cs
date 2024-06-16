@@ -1,4 +1,5 @@
 ﻿using AvtoMigBussines.CarWash.Models;
+using AvtoMigBussines.DTOModels;
 
 namespace AvtoMigBussines.CarWash.Repositories.Interfaces
 {
@@ -11,5 +12,8 @@ namespace AvtoMigBussines.CarWash.Repositories.Interfaces
         Task DeleteAsync(int id);
         Task<bool> ExistsWithName(int? orderId, int? serviceId);
         Task<IEnumerable<WashService>> GetAllFilterAsync(string? aspNetUserId, int? organizationId);
+        Task<int?> GetCountAllServices(int? orderId);
+        Task<double?> GetSummAllServices(int? orderId);
+        Task<IEnumerable<WashService>> GetAllWashServicesOnOrder(int? orderId);
     }
 }

@@ -11,5 +11,8 @@ namespace AvtoMigBussines.CarWash.Services.Interfaces
         Task<bool> CreateAsync(WashServiceDTO washServiceDTO, string aspNetUserId);
         Task UpdateAsync(WashService washService);
         Task DeleteAsync(int id);
+        Task<int?> GetCountAllServices(int? orderId);
+        Task<double?> GetSummAllServices(int? orderId);
+        Task<IEnumerable<WashServiceDTO>> GetAllWashServicesOnOrder(int? orderId, string? aspNetUserId);
     }
 }
