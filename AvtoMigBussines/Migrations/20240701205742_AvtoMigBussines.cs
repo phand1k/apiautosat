@@ -71,6 +71,20 @@ namespace AvtoMigBussines.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PaymentMethods",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentMethods", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Statuses",
                 columns: table => new
                 {
@@ -306,13 +320,15 @@ namespace AvtoMigBussines.Migrations
                     CarNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrganizationId = table.Column<int>(type: "int", nullable: true),
+                    EndOfOrderAspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: true),
                     CarId = table.Column<int>(type: "int", nullable: true),
                     ModelCarId = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: true),
                     IsReturn = table.Column<bool>(type: "bit", nullable: true),
-                    IsOvered = table.Column<bool>(type: "bit", nullable: true)
+                    IsOvered = table.Column<bool>(type: "bit", nullable: true),
+                    DateOfCompleteService = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -340,6 +356,73 @@ namespace AvtoMigBussines.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SalarySettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ServiceId = table.Column<int>(type: "int", nullable: true),
+                    Salary = table.Column<double>(type: "float", nullable: true),
+                    AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalarySettings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalarySettings_AspNetUsers_AspNetUserId",
+                        column: x => x.AspNetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalarySettings_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SalarySettings_Services_ServiceId",
+                        column: x => x.ServiceId,
+                        principalTable: "Services",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WashOrderTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PaymentMethodId = table.Column<int>(type: "int", nullable: true),
+                    AspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Summ = table.Column<double>(type: "float", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true),
+                    WashOrderId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WashOrderTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WashOrderTransactions_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WashOrderTransactions_PaymentMethods_PaymentMethodId",
+                        column: x => x.PaymentMethodId,
+                        principalTable: "PaymentMethods",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WashOrderTransactions_WashOrders_WashOrderId",
+                        column: x => x.WashOrderId,
+                        principalTable: "WashOrders",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WashServices",
                 columns: table => new
                 {
@@ -352,7 +435,10 @@ namespace AvtoMigBussines.Migrations
                     IsDeleted = table.Column<bool>(type: "bit", nullable: true),
                     IsOvered = table.Column<bool>(type: "bit", nullable: true),
                     WashOrderId = table.Column<int>(type: "int", nullable: true),
-                    OrganizationId = table.Column<int>(type: "int", nullable: true)
+                    OrganizationId = table.Column<int>(type: "int", nullable: true),
+                    WhomAspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Salary = table.Column<double>(type: "float", nullable: true),
+                    DateOfCompleteService = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -429,6 +515,21 @@ namespace AvtoMigBussines.Migrations
                 column: "CarId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SalarySettings_AspNetUserId",
+                table: "SalarySettings",
+                column: "AspNetUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalarySettings_OrganizationId",
+                table: "SalarySettings",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalarySettings_ServiceId",
+                table: "SalarySettings",
+                column: "ServiceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Services_AspNetUserId",
                 table: "Services",
                 column: "AspNetUserId");
@@ -462,6 +563,21 @@ namespace AvtoMigBussines.Migrations
                 name: "IX_WashOrders_OrganizationId",
                 table: "WashOrders",
                 column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WashOrderTransactions_OrganizationId",
+                table: "WashOrderTransactions",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WashOrderTransactions_PaymentMethodId",
+                table: "WashOrderTransactions",
+                column: "PaymentMethodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WashOrderTransactions_WashOrderId",
+                table: "WashOrderTransactions",
+                column: "WashOrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WashServices_AspNetUserId",
@@ -505,16 +621,25 @@ namespace AvtoMigBussines.Migrations
                 name: "NotifiactionTokens");
 
             migrationBuilder.DropTable(
+                name: "SalarySettings");
+
+            migrationBuilder.DropTable(
                 name: "Statuses");
 
             migrationBuilder.DropTable(
                 name: "Subscriptions");
 
             migrationBuilder.DropTable(
+                name: "WashOrderTransactions");
+
+            migrationBuilder.DropTable(
                 name: "WashServices");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "PaymentMethods");
 
             migrationBuilder.DropTable(
                 name: "Services");

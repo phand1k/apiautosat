@@ -17,7 +17,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         }
         public async Task<WashOrder> GetByIdAsync(int id)
         {
-            return await _context.WashOrders.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+            return await _context.WashOrders.Include(x=>x.ModelCar.Car).Include(x=>x.AspNetUser).FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
         }
         public async Task<IEnumerable<WashOrder>> GetAllAsync()
         {
@@ -32,7 +32,13 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
                 .Take(5)
                 .ToListAsync();
         }
-
+        public async Task<IEnumerable<WashOrder>> GetAllNotCompletedFilterAsync(string? aspNetUserId, int? organizationId)
+        {
+            return await _context.WashOrders
+                .Include(x => x.ModelCar.Car).Where(x=>x.IsOvered == false && x.IsDeleted == false)
+                .Where(x => x.AspNetUserId == aspNetUserId && x.OrganizationId == organizationId)
+                .ToListAsync();
+        }
         public async Task AddAsync(WashOrder carWashOrder)
         {
             _context.WashOrders.Add(carWashOrder);
@@ -57,6 +63,28 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         public async Task<bool> ExistsWithName(string carNumber, int? organizationId)
         {
             return await _context.WashOrders.Where(x=>x.OrganizationId == organizationId).AnyAsync(c => c.CarNumber == carNumber && (c.IsDeleted == false && c.IsOvered == false ));
+        }
+
+        public async Task CompleteUpdateAsync(WashOrder carWashOrder)
+        {
+            _context.WashOrders.Update(carWashOrder);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<WashOrder>> GettAllCompletedFilterAsync(string? aspNetUserId, int? organizationId)
+        {
+            return await _context.WashOrders
+                .Include(x => x.ModelCar.Car).Where(x => x.IsOvered == true && x.IsDeleted == false)
+                .Where(x => x.AspNetUserId == aspNetUserId && x.OrganizationId == organizationId)
+                .ToListAsync();
+        }
+
+        public async Task<int?> GetAllNotCompletedCountFilterAsync(string? aspNetUserId, int? organizationId)
+        {
+            return await _context.WashOrders
+               .Include(x => x.ModelCar.Car).Where(x => x.IsOvered == false && x.IsDeleted == false)
+               .Where(x => x.AspNetUserId == aspNetUserId && x.OrganizationId == organizationId)
+               .CountAsync();
         }
     }
 }

@@ -1,33 +1,28 @@
 ﻿using AvtoMigBussines.Authenticate;
 using AvtoMigBussines.Models;
-using System.ComponentModel.DataAnnotations.Schema;
 using NodaTime;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace AvtoMigBussines.CarWash.Models
 {
-    public class WashService
+    public class WashOrderTransaction
     {
         public int Id { get; set; }
-        public double? Price { get; set; }
-        [ForeignKey("ServiceId")]
-        public int? ServiceId { get; set; }
-        public Service? Service { get; set; }
+        [ForeignKey("PaymentMethodId")]
+        public int? PaymentMethodId { get; set; }
+        public PaymentMethod? PaymentMethod { get; set; }
         [ForeignKey("AspNetUserId")]
         public string? AspNetUserId { get; set; }
-        public AspNetUser? AspNetUser { get; set; }
         public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public double? Summ { get; set; }
         public bool? IsDeleted { get; set; } = false;
-        public bool? IsOvered { get; set; } = false;
-        [ForeignKey("WashOrderId")]
-        public int? WashOrderId { get; set; }
-        public WashOrder? WashOrder { get; set; }
         [ForeignKey("OrganizationId")]
         public int? OrganizationId { get; set; }
         public Organization? Organization { get; set; }
-        [ForeignKey("WhomAspNetUserId")]
-        public string? WhomAspNetUserId { get; set; }
-        public double? Salary { get; set; }
-        public DateTime? DateOfCompleteService { get; set;} = DateTime.Now;
-        public WashService()
+        [ForeignKey("WashOrderId")]
+        public int? WashOrderId { get; set; }
+        public WashOrder? WashOrder { get; set; }
+        public WashOrderTransaction()
         {
             var timeZone = DateTimeZoneProviders.Tzdb["Asia/Almaty"];
             var now = SystemClock.Instance.GetCurrentInstant();

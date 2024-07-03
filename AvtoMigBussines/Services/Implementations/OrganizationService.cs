@@ -4,15 +4,18 @@ using AvtoMigBussines.Models;
 using AvtoMigBussines.Repositories.Implementations;
 using AvtoMigBussines.Repositories.Interfaces;
 using AvtoMigBussines.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace AvtoMigBussines.Services.Implementations
 {
     public class OrganizationService : IOrganizationService
     {
         private readonly IOrganizationRepository organizationRepository;
-        public OrganizationService(IOrganizationRepository organizationRepository)
+        private readonly UserManager<AspNetUser> userManager;
+        public OrganizationService(IOrganizationRepository organizationRepository, UserManager<AspNetUser> userManager)
         {
             this.organizationRepository = organizationRepository;
+            this.userManager = userManager;
         }
         public async Task<Organization> GetOrganizationByIdAsync(int? id)
         {
@@ -36,6 +39,16 @@ namespace AvtoMigBussines.Services.Implementations
             }
 
             await organizationRepository.AddAsync(organization);
+            Random rnd = new Random();
+            AspNetUser defaultUser = new AspNetUser
+            {
+                FirstName = "Стандартный",
+                LastName = "Пользователь",
+                SurName = "Для назначения услуг",
+                OrganizationId = organization.Id,
+                PhoneNumber = Guid.NewGuid().ToString()
+            };
+            await userManager.CreateAsync(defaultUser);
             return true;
         }
 

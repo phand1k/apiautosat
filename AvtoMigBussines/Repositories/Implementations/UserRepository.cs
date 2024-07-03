@@ -44,9 +44,9 @@ namespace AvtoMigBussines.Repositories.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string phoneNumber)
+        public async Task DeleteAsync(string id)
         {
-            var user = await GetByPhoneNumberAsync(phoneNumber);
+            var user = await userManager.FindByIdAsync(id);
             if (user != null)
             {
                 user.IsDeleted = true;

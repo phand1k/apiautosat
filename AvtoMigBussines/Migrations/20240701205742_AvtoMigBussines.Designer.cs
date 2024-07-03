@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AvtoMigBussines.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240613135422_AvtoMigBussines")]
+    [Migration("20240701205742_AvtoMigBussines")]
     partial class AvtoMigBussines
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,8 +165,14 @@ namespace AvtoMigBussines.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("DateOfCompleteService")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("DateOfCreated")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("EndOfOrderAspNetUserId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool?>("IsDeleted")
                         .HasColumnType("bit");
@@ -183,8 +189,8 @@ namespace AvtoMigBussines.Migrations
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -199,6 +205,46 @@ namespace AvtoMigBussines.Migrations
                     b.ToTable("WashOrders");
                 });
 
+            modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashOrderTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PaymentMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Summ")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("WashOrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.HasIndex("WashOrderId");
+
+                    b.ToTable("WashOrderTransactions");
+                });
+
             modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashService", b =>
                 {
                     b.Property<int>("Id")
@@ -209,6 +255,9 @@ namespace AvtoMigBussines.Migrations
 
                     b.Property<string>("AspNetUserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("DateOfCompleteService")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateOfCreated")
                         .HasColumnType("datetime2");
@@ -225,11 +274,17 @@ namespace AvtoMigBussines.Migrations
                     b.Property<double?>("Price")
                         .HasColumnType("float");
 
+                    b.Property<double?>("Salary")
+                        .HasColumnType("float");
+
                     b.Property<int?>("ServiceId")
                         .HasColumnType("int");
 
                     b.Property<int?>("WashOrderId")
                         .HasColumnType("int");
+
+                    b.Property<string>("WhomAspNetUserId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -313,6 +368,62 @@ namespace AvtoMigBussines.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NotifiactionTokens");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.PaymentMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PaymentMethods");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.SalarySetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Salary")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("SalarySettings");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.Service", b =>
@@ -570,6 +681,27 @@ namespace AvtoMigBussines.Migrations
                     b.Navigation("Organization");
                 });
 
+            modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashOrderTransaction", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.HasOne("AvtoMigBussines.Models.PaymentMethod", "PaymentMethod")
+                        .WithMany()
+                        .HasForeignKey("PaymentMethodId");
+
+                    b.HasOne("AvtoMigBussines.CarWash.Models.WashOrder", "WashOrder")
+                        .WithMany()
+                        .HasForeignKey("WashOrderId");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("PaymentMethod");
+
+                    b.Navigation("WashOrder");
+                });
+
             modelBuilder.Entity("AvtoMigBussines.CarWash.Models.WashService", b =>
                 {
                     b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
@@ -604,6 +736,27 @@ namespace AvtoMigBussines.Migrations
                         .HasForeignKey("CarId");
 
                     b.Navigation("Car");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.SalarySetting", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
+                        .WithMany()
+                        .HasForeignKey("AspNetUserId");
+
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.HasOne("AvtoMigBussines.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId");
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.Service", b =>

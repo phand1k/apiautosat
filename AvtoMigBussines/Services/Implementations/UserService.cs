@@ -83,6 +83,7 @@ namespace AvtoMigBussines.Services.Implementations
             }
             aspNetUser.OrganizationId = checkOrganizationExists.Id;
             var result = await userManager.CreateAsync(aspNetUser, model.Password);
+            await userManager.AddToRoleAsync(aspNetUser, "Мастер");
         }
         public async Task<string> LoginUserAsync(LoginModel model)
         {

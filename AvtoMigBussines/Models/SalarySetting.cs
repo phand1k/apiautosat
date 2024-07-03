@@ -1,21 +1,22 @@
 ﻿using AvtoMigBussines.Authenticate;
-using AvtoMigBussines.Models;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AvtoMigBussines.CarWash.Models
+namespace AvtoMigBussines.Models
 {
-    public class WashOrder : Order
+    public class SalarySetting
     {
-        [Required]
-        public string? CarNumber { get; set; }
+        public int Id { get; set; }
+        [ForeignKey("ServiceId")]
+        public int? ServiceId { get; set; }
+        public Service? Service { get; set; }
+        public double? Salary { get; set; }
         [ForeignKey("AspNetUserId")]
         public string? AspNetUserId { get; set; }
         public AspNetUser? AspNetUser { get; set; }
+        public bool? IsDeleted { get; set; } = false;
+        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
         [ForeignKey("OrganizationId")]
         public int? OrganizationId { get; set; }
         public Organization? Organization { get; set; }
-        [ForeignKey("EndOfOrderAspNetUserId")]
-        public string? EndOfOrderAspNetUserId { get; set; }
     }
 }

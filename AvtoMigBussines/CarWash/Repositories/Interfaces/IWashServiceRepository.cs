@@ -1,5 +1,6 @@
 ﻿using AvtoMigBussines.CarWash.Models;
-using AvtoMigBussines.DTOModels;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AvtoMigBussines.CarWash.Repositories.Interfaces
 {
@@ -15,5 +16,9 @@ namespace AvtoMigBussines.CarWash.Repositories.Interfaces
         Task<int?> GetCountAllServices(int? orderId);
         Task<double?> GetSummAllServices(int? orderId);
         Task<IEnumerable<WashService>> GetAllWashServicesOnOrder(int? orderId);
+        Task<IEnumerable<WashService>> GetAllMyWashServices(string? aspNetUserId);
+        Task<IEnumerable<WashService>> GetAllMyNotCompletedWashServices(string? aspNetUserId);
+        Task<IEnumerable<WashService>> GetAllNotCompletedWashServicesOnOrder(int? orderId);
+        Task<IEnumerable<WashService>> GetAllServicesByWashOrderIdAsync(int id);
     }
 }

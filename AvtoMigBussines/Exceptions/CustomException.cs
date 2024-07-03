@@ -14,6 +14,14 @@
             {
             }
         }
+        public class SalarySettingNotFoundException : Exception
+        {
+            public SalarySettingNotFoundException(string message) : base(message)
+            {
+
+            }
+        }
+
         public class WashOrderNotFoundException : Exception
         {
             public WashOrderNotFoundException(string message) : base(message) { }
@@ -33,6 +41,11 @@
 
             }
         }
+        public class PaymentMethodExistsException : Exception
+        {
+            public PaymentMethodExistsException(string message) : base(message) { }
+        }
+
         public class UserNotFoundException : Exception
         {
             public UserNotFoundException(string message) : base(message)

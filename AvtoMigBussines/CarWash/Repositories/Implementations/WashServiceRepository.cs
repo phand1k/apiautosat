@@ -1,18 +1,22 @@
 ﻿using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Repositories.Interfaces;
 using AvtoMigBussines.Data;
-using AvtoMigBussines.DTOModels;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AvtoMigBussines.CarWash.Repositories.Implementations
 {
     public class WashServiceRepository : IWashServiceRepository
     {
         private readonly ApplicationDbContext _context;
+
         public WashServiceRepository(ApplicationDbContext context)
         {
             _context = context;
         }
+
         public async Task AddAsync(WashService washService)
         {
             _context.WashServices.Add(washService);
@@ -31,9 +35,9 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
 
         public async Task<bool> ExistsWithName(int? orderId, int? serviceId)
         {
-            return await _context.WashServices.
-                Where(x => x.OrganizationId == orderId).
-                AnyAsync(c => c.WashOrderId == orderId && (c.IsDeleted == false && c.ServiceId == serviceId));
+            return await _context.WashServices
+                .Where(x => x.OrganizationId == orderId)
+                .AnyAsync(c => c.WashOrderId == orderId && (c.IsDeleted == false && c.ServiceId == serviceId));
         }
 
         public async Task<IEnumerable<WashService>> GetAllAsync()
@@ -49,10 +53,32 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<WashService>> GetAllMyNotCompletedWashServices(string? aspNetUserId)
+        {
+            return await _context.WashServices.Include(x => x.Service)
+                .Include(x => x.WashOrder.ModelCar.Car).Include(x => x.AspNetUser)
+                .Where(x => x.WhomAspNetUserId == aspNetUserId && x.IsOvered == false)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<WashService>> GetAllMyWashServices(string? aspNetUserId)
+        {
+            return await _context.WashServices.Include(x => x.Service)
+                .Include(x => x.WashOrder.ModelCar.Car).Include(x => x.AspNetUser)
+                .Where(x => x.WhomAspNetUserId == aspNetUserId && x.IsOvered == true)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<WashService>> GetAllWashServicesOnOrder(int? orderId)
         {
-            return await _context.WashServices.Include(x=>x.Service).
-                Where(x=>x.WashOrderId == orderId && x.IsDeleted == false).ToListAsync();
+            return await _context.WashServices.Include(x => x.Service)
+                .Where(x => x.WashOrderId == orderId && x.IsDeleted == false).ToListAsync();
+        }
+
+        public async Task<IEnumerable<WashService>> GetAllNotCompletedWashServicesOnOrder(int? orderId)
+        {
+            return await _context.WashServices.Include(x => x.Service).Where(x => x.IsOvered == false)
+                .Where(x => x.WashOrderId == orderId && x.IsDeleted == false).ToListAsync();
         }
 
         public async Task<WashService> GetByIdAsync(int id)
@@ -62,18 +88,24 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
 
         public async Task<int?> GetCountAllServices(int? orderId)
         {
-            return await _context.WashServices.Where(x=>x.WashOrderId == orderId && x.IsDeleted == false).CountAsync();
+            return await _context.WashServices.Where(x => x.WashOrderId == orderId && x.IsDeleted == false).CountAsync();
         }
 
         public async Task<double?> GetSummAllServices(int? orderId)
         {
-            return await _context.WashServices.Where(x=>x.WashOrderId == orderId && x.IsDeleted == false).Select(x=>x.Price).SumAsync();
+            return await _context.WashServices.Where(x => x.WashOrderId == orderId && x.IsDeleted == false).Select(x => x.Price).SumAsync();
         }
 
         public async Task UpdateAsync(WashService washService)
         {
             _context.WashServices.Update(washService);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<WashService>> GetAllServicesByWashOrderIdAsync(int id)
+        {
+            return await _context.WashServices.Where(x => x.IsOvered == false)
+                .Where(x => x.WashOrderId == id && x.IsDeleted == false).ToListAsync();
         }
     }
 }

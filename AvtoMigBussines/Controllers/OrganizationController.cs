@@ -32,7 +32,6 @@ namespace AvtoMigBussines.Controllers
             try
             {
                 await organizationService.CreateOrganizationAsync(organization);
-
                 await subscriptionService.CreateSubscriptionAsync(organization.Id);
                 return Ok(organization);
             }
