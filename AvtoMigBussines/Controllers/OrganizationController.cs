@@ -56,11 +56,53 @@ namespace AvtoMigBussines.Controllers
             {
                 return Unauthorized();
             }
-            var organization = await subscriptionService.GetSubscriptionById(user.OrganizationId);
+            var organization = await subscriptionService.GetSubscriptionById(Convert.ToInt32(user.OrganizationId));
 
             return Ok(organization);
         }
+        [HttpPost("RenewSubscription")]
+        public async Task<IActionResult> RenewSubscription(int? id)
+        {
+            var organization = await organizationService.GetOrganizationByIdAsync(id);
+            await subscriptionService.CreateSubscriptionAsync(organization.Id);
+            return Ok(organization);
+        }
+        [Authorize]
+        [HttpPost("ConfirmRights")]
+        public async Task<IActionResult> ConfirmRights(double? password)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            var passwordObject = await organizationService.GetOrganizationPassword(password);
+            if (passwordObject == null)
+            {
+                return BadRequest("Не верный пароль организации");
+            }
+            var userRoles = await userManager.GetRolesAsync(user);
+            await userManager.RemoveFromRolesAsync(user, userRoles);
+            await userManager.AddToRoleAsync(user, "Директор");
+            return Ok(passwordObject);
+        }
+        private async Task<AspNetUser> GetCurrentUserAsync()
+        {
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(userName))
+            {
+                return null;
+            }
 
+            var aspNetUser = await userService.GetUserByPhoneNumberAsync(userName);
+            if (aspNetUser == null)
+            {
+                return null;
+            }
+
+            var user = await userManager.FindByIdAsync(aspNetUser.Id);
+            return user;
+        }
         [Route("GetOrganization")]
         [HttpGet]
         [Authorize]

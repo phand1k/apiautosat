@@ -24,6 +24,7 @@ namespace AvtoMigBussines.Authenticate
         public ICollection<AspNetUser>? AspNetUsers { get; set; }
         [JsonIgnore]
         public ICollection<WashOrder> WashOrders { get; set; }
+        public double Password { get; set; }
         public Organization()
         {
             WashOrders = new List<WashOrder>();

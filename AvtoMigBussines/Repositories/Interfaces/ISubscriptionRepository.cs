@@ -8,5 +8,7 @@ namespace AvtoMigBussines.Repositories.Interfaces
         Task CreateAsync(Subscription subscription);
         Task UpdateAsync(Subscription subscription);
         Task<Subscription> GetSubscriptionInfoAsync(int? id);
+        Task<Subscription> GetSubscriptionByOrganizationIdAsync(int id);
+        Task RenewSubscriptionAsync(Subscription subscription);
     }
 }

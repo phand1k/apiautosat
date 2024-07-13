@@ -13,6 +13,10 @@ namespace AvtoMigBussines.Repositories.Implementations
         {
             _context = context;
         }
+        public async Task<Organization> GetPasswordrganization(double? password)
+        {
+            return await _context.Organizations.FirstOrDefaultAsync(x=>x.Password == password);
+        }
         public async Task<Organization> GetByIdAsync(int? id)
         {
             return await _context.Organizations.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);

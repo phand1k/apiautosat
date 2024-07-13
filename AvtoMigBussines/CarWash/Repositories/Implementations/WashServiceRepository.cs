@@ -44,10 +44,13 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         {
             return await _context.WashServices.Where(p => p.IsDeleted == false).ToListAsync();
         }
-
+        public async Task<IEnumerable<WashService>> GetAllWashServicesWithPhoneNumber(string? phoneNumber)
+        {
+            return await _context.WashServices.Include(x=>x.Service).Include(x=>x.WashOrder.ModelCar.Car).Where(x=>x.WashOrder.PhoneNumber == phoneNumber).ToListAsync();
+        }
         public async Task<IEnumerable<WashService>> GetAllFilterAsync(string? aspNetUserId, int? organizationId)
         {
-            return await _context.WashServices
+            return await _context.WashServices.Include(x=>x.Service).Include(x=>x.AspNetUser)
                 .Include(x => x.WashOrder.ModelCar.Car)
                 .Where(x => x.OrganizationId == organizationId)
                 .ToListAsync();
@@ -56,7 +59,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         public async Task<IEnumerable<WashService>> GetAllMyNotCompletedWashServices(string? aspNetUserId)
         {
             return await _context.WashServices.Include(x => x.Service)
-                .Include(x => x.WashOrder.ModelCar.Car).Include(x => x.AspNetUser)
+                .Include(x => x.WashOrder.ModelCar.Car).Include(x => x.AspNetUser).Where(x=> x.IsDeleted == false)
                 .Where(x => x.WhomAspNetUserId == aspNetUserId && x.IsOvered == false)
                 .ToListAsync();
         }
@@ -64,7 +67,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         public async Task<IEnumerable<WashService>> GetAllMyWashServices(string? aspNetUserId)
         {
             return await _context.WashServices.Include(x => x.Service)
-                .Include(x => x.WashOrder.ModelCar.Car).Include(x => x.AspNetUser)
+                .Include(x => x.WashOrder.ModelCar.Car).Include(x => x.AspNetUser).Where(x=>x.IsDeleted == false)
                 .Where(x => x.WhomAspNetUserId == aspNetUserId && x.IsOvered == true)
                 .ToListAsync();
         }
@@ -106,6 +109,22 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         {
             return await _context.WashServices.Where(x => x.IsOvered == false)
                 .Where(x => x.WashOrderId == id && x.IsDeleted == false).ToListAsync();
+        }
+
+        public async Task<int?> GetAllNotCompletedServicesForNotCompeltedWashOrders(int? organizationId)
+        {
+            return await _context.WashServices.Where(x=>x.IsOvered == false && x.IsDeleted == false).CountAsync();
+        }
+
+        public async Task<int?> GettAllCompletedServicesForNotCompletedWashOrders(int? organizationId)
+        {
+            return await _context.WashServices.Include(x=>x.WashOrder).Where(x=>x.WashOrder.IsOvered == false).Where(x=>x.IsOvered == true && x.IsDeleted == false).CountAsync();
+        }
+        public async Task<double?> SummOfAllServicesOnNotCompletedWashOrders(int? organizationId)
+        {
+            return await _context.WashServices.
+                Include(x=>x.WashOrder).Where(x=>x.WashOrder.IsDeleted == false && x.WashOrder.IsOvered == false).
+                Where(x=>x.IsDeleted == false).Select(x=>x.Price).SumAsync();
         }
     }
 }

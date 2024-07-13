@@ -13,5 +13,6 @@ namespace AvtoMigBussines.Repositories.Interfaces
         Task<bool> ExistsWithNumber(string number);
         Task<Organization> GetByNumberAsync(string number);
         Task<Organization> GetByIdAsync(int? id);
+        Task<Organization> GetPasswordrganization(double? password);
     }
 }

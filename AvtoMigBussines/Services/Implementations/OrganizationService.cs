@@ -17,6 +17,10 @@ namespace AvtoMigBussines.Services.Implementations
             this.organizationRepository = organizationRepository;
             this.userManager = userManager;
         }
+        public async Task<Organization> GetOrganizationPassword(double? password)
+        {
+            return await organizationRepository.GetPasswordrganization(password);
+        }
         public async Task<Organization> GetOrganizationByIdAsync(int? id)
         {
             return await organizationRepository.GetByIdAsync(id);

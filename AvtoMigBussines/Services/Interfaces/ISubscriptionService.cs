@@ -7,6 +7,6 @@ namespace AvtoMigBussines.Services.Interfaces
     {
         Task<bool> CreateSubscriptionAsync(int? organizationId);
         Task UpdateSubscriptionAsync(int? organizationId);
-        Task<Subscription> GetSubscriptionById(int? organizationId);
+        Task<Subscription> GetSubscriptionById(int organizationId);
     }
 }

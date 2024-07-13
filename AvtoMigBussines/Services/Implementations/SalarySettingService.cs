@@ -14,11 +14,13 @@ namespace AvtoMigBussines.Services.Implementations
     {
         private readonly ISalarySettingRepository salarySettingRepository;
         private readonly UserManager<AspNetUser> userManager;
+        private readonly IServiceRepository serviceRepository;
 
-        public SalarySettingService(ISalarySettingRepository salarySettingRepository, UserManager<AspNetUser> userManager)
+        public SalarySettingService(IServiceRepository serviceRepository, ISalarySettingRepository salarySettingRepository, UserManager<AspNetUser> userManager)
         {
             this.salarySettingRepository = salarySettingRepository;
             this.userManager = userManager;
+            this.serviceRepository = serviceRepository;
         }
 
         public async Task<bool> CreateSalarySettingAsync(SalarySettingDTO salarySettingDTO)
@@ -32,10 +34,18 @@ namespace AvtoMigBussines.Services.Implementations
             var salarySetting = new SalarySetting()
             {
                 ServiceId = salarySettingDTO.ServiceId,
-                Salary = salarySettingDTO.Salary,
                 AspNetUserId = salarySettingDTO.AspNetUserId,
                 OrganizationId = user.Result.OrganizationId
             };
+            if (salarySettingDTO.Salary <= 100)
+            {
+                salarySetting.Salary = (serviceRepository.GetByIdAsync(salarySettingDTO.ServiceId).Result.Price*salarySettingDTO.Salary)/100;
+            }
+            else
+            {
+                salarySetting.Salary = salarySettingDTO.Salary;
+            }
+
             await salarySettingRepository.AddAsync(salarySetting);
             return true;
         }

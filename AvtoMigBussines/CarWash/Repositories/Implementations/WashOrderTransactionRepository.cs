@@ -23,10 +23,27 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<WashOrderTransaction>> GetAllAsync(int? washOrderId)
+        public async Task<IEnumerable<WashOrderTransaction>> GetAllAsync(int? organizationId)
         {
-            throw new NotImplementedException();
+            return await context.WashOrderTransactions.Where(x=>x.OrganizationId == organizationId).Include(x=>x.PaymentMethod).ToListAsync();
         }
+        public async Task<IEnumerable<WashOrderTransaction>> GetAllTransactions(int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd)
+        {
+            // Начальная загрузка данных с необходимыми связями
+            var query = context.WashOrderTransactions
+                .Include(x => x.PaymentMethod)
+                .Include(x => x.Organization)
+                .Where(x => x.OrganizationId == organizationId && x.IsDeleted == false);
+
+            // Проверка наличия дат и фильтрация на их основе
+            if (dateOfStart != null && dateOfEnd != null)
+            {
+                query = query.Where(x => x.DateOfCreated >= dateOfStart && x.DateOfCreated <= dateOfEnd);
+            }
+
+            return await query.ToListAsync();
+        }
+
 
         public async Task<WashOrderTransaction> GetByIdAsync(int id)
         {

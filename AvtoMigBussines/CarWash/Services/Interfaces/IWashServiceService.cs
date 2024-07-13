@@ -18,5 +18,9 @@ namespace AvtoMigBussines.CarWash.Services.Interfaces
         Task<IEnumerable<WashServiceDTO>> GetAllMyWashServices(string? aspNetUserId);
         Task<IEnumerable<WashServiceDTO>> GetAllMyIsNotCompletedWashServices(string? aspNetUserId);
         Task<IEnumerable<WashServiceDTO>> GetAllNotCompletedWashServicesOnOrder(int? orderId, string? aspNetUserId);
+        Task<int?> GetCountOfNotCompletedServicesOnNotCompletedOrders(int? organizationId);
+        Task<int?> GetCountOfCompletedServicesOnNotCompletedOrders(int? organizationId);
+        Task<double?> GetSummOfServicesOnNotCompletedWashOrders(int? organizationId);
+        Task<IEnumerable<WashService>> GetAllWashServicesWithPhoneNumber(string? phoneNumber);
     }
 }

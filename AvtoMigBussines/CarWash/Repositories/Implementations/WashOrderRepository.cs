@@ -36,7 +36,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         {
             return await _context.WashOrders
                 .Include(x => x.ModelCar.Car).Where(x=>x.IsOvered == false && x.IsDeleted == false)
-                .Where(x => x.AspNetUserId == aspNetUserId && x.OrganizationId == organizationId)
+                .Where(x => x.OrganizationId == organizationId).OrderByDescending(x=>x.DateOfCreated)
                 .ToListAsync();
         }
         public async Task AddAsync(WashOrder carWashOrder)
@@ -60,6 +60,27 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
                 await UpdateAsync(product);
             }
         }
+        public async Task ReturnAsync(int id)
+        {
+            var product = await GetByIdAsync(id);
+            if (product != null)
+            {
+                product.IsDeleted = true;
+                var washServices = await _context.WashServices.Where(x => x.WashOrderId == id).ToListAsync();
+                foreach (var washService in washServices)
+                {
+                    washService.IsDeleted = true;
+                    await _context.SaveChangesAsync();
+                }
+                var transactions = await _context.WashOrderTransactions.Where(x => x.WashOrderId == id).ToListAsync();
+                foreach (var transaction in transactions)
+                {
+                    transaction.IsDeleted = true;
+                    await _context.SaveChangesAsync();
+                }
+                await UpdateAsync(product);
+            }
+        }
         public async Task<bool> ExistsWithName(string carNumber, int? organizationId)
         {
             return await _context.WashOrders.Where(x=>x.OrganizationId == organizationId).AnyAsync(c => c.CarNumber == carNumber && (c.IsDeleted == false && c.IsOvered == false ));
@@ -75,7 +96,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         {
             return await _context.WashOrders
                 .Include(x => x.ModelCar.Car).Where(x => x.IsOvered == true && x.IsDeleted == false)
-                .Where(x => x.AspNetUserId == aspNetUserId && x.OrganizationId == organizationId)
+                .Where(x => x.OrganizationId == organizationId)
                 .ToListAsync();
         }
 
@@ -83,7 +104,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         {
             return await _context.WashOrders
                .Include(x => x.ModelCar.Car).Where(x => x.IsOvered == false && x.IsDeleted == false)
-               .Where(x => x.AspNetUserId == aspNetUserId && x.OrganizationId == organizationId)
+               .Where(x => x.OrganizationId == organizationId)
                .CountAsync();
         }
     }

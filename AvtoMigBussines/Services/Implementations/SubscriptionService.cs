@@ -13,9 +13,9 @@ namespace AvtoMigBussines.Services.Implementations
         {
             this.subscriptionRepository = subscriptionRepository;
         }
-        public async Task<Subscription> GetSubscriptionById(int? organizationId)
+        public async Task<Subscription> GetSubscriptionById(int organizationId)
         {
-            return await subscriptionRepository.GetSubscriptionInfoAsync(organizationId);
+            return await subscriptionRepository.GetSubscriptionByOrganizationIdAsync(organizationId);
         }
         public async Task<bool> CreateSubscriptionAsync(int? organizationId)
         {

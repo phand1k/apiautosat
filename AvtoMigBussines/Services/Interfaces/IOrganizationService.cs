@@ -11,5 +11,6 @@ namespace AvtoMigBussines.Services.Interfaces
         Task DeleteOrganizationAsync(int id);
         Task<Organization> GetOrganizationByNumberAsync(string number);
         Task<Organization> GetOrganizationByIdAsync(int? id);
+        Task<Organization> GetOrganizationPassword(double? password);
     }
 }

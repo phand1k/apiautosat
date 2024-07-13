@@ -16,7 +16,11 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             this.washOrderTransactionRepository = washTransactionRepository;
             this.userManager = userManager;
         }
-
+        public async Task<IEnumerable<WashOrderTransaction>> GetAllTransactions(string? aspNetUserId, DateTime? dateOfStart, DateTime? dateOfEnd)
+        {
+            var user = await userManager.FindByIdAsync(aspNetUserId);
+            return await washOrderTransactionRepository.GetAllTransactions(user.OrganizationId, dateOfStart, dateOfEnd);
+        }
         public async Task<bool> CreateWashOrderTransactionAsync(WashOrderTransaction washOrderTransaction, string aspNetUserId, int washOrderId)
         {
             var user = await userManager.FindByIdAsync(aspNetUserId);
@@ -25,11 +29,6 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             washOrderTransaction.WashOrderId = washOrderId;
             await washOrderTransactionRepository.AddAsync(washOrderTransaction);
             return true;
-        }
-
-        public async Task<IEnumerable<WashOrderTransaction>> GetAllWashOrderTransactionsAsync(int? washOrderId)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<WashOrderTransaction> GetWashOrderTransactionByIdAsync(int id)

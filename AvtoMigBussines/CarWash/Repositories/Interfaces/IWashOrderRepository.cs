@@ -16,5 +16,6 @@ namespace AvtoMigBussines.CarWash.Repositories.Interfaces
         Task<IEnumerable<WashOrder>> GetAllNotCompletedFilterAsync(string? aspNetUserId, int? organizationId);
         Task<IEnumerable<WashOrder>> GettAllCompletedFilterAsync(string? aspNetUserId, int? organizationId);
         Task<int?> GetAllNotCompletedCountFilterAsync(string? aspNetUserId, int? organizationId);
+        Task ReturnAsync(int id);
     }
 }

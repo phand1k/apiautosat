@@ -96,7 +96,7 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
                     ServiceName = ws.Service.Name,
                     Price = ws.Price,
                     WhomAspNetUserId = ws.WhomAspNetUserId,
-                    Order = ws.WashOrder.ModelCar.Name + " "+ws.WashOrder.Car.Name,
+                    Order = ws.WashOrder.ModelCar.Name + " " + ws.WashOrder.Car.Name,
                     CarNumber = ws.WashOrder.CarNumber,
                     WashOrderId = ws.WashOrder.Id,
                     AspNetUserId = ws.AspNetUserId,
@@ -109,6 +109,11 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             }
 
             return allMyWashServiceDTOs;
+        }
+        public async Task<IEnumerable<WashService>> GetAllWashServicesWithPhoneNumber(string phoneNumber)
+        {
+            var list = await _washServiceRepository.GetAllWashServicesWithPhoneNumber(phoneNumber);
+            return list;
         }
         public async Task<IEnumerable<WashServiceDTO>> GetAllNotCompletedWashServicesOnOrder(int? orderId, string? aspNetUserId)
         {
@@ -185,6 +190,19 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             washService.DateOfCompleteService = now.InZone(timeZone).ToDateTimeUnspecified();
             washService.IsOvered = true;
             await _washServiceRepository.UpdateAsync(washService);
+        }
+
+        public async Task<int?> GetCountOfNotCompletedServicesOnNotCompletedOrders(int? organizationId)
+        {
+            return await _washServiceRepository.GetAllNotCompletedServicesForNotCompeltedWashOrders(organizationId);
+        }
+        public async Task<int?> GetCountOfCompletedServicesOnNotCompletedOrders(int? organizationId)
+        {
+            return await _washServiceRepository.GettAllCompletedServicesForNotCompletedWashOrders(organizationId);
+        }
+        public async Task<double?> GetSummOfServicesOnNotCompletedWashOrders(int? organizationId)
+        {
+            return await _washServiceRepository.SummOfAllServicesOnNotCompletedWashOrders(organizationId);
         }
     }
 }

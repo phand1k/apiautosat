@@ -13,6 +13,7 @@ namespace AvtoMigBussines.Data
         {
 
         }
+        public DbSet<NotificationCenter> NotificationCenters { get; set; }
         public DbSet<WashOrderTransaction> WashOrderTransactions { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<SalarySetting> SalarySettings { get; set; }

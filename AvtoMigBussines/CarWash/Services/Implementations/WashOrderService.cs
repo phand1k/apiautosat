@@ -65,6 +65,10 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
         {
             await _washOrderRepository.DeleteAsync(id);
         }
+        public async Task ReturnWashOrderAsync(int id)
+        {
+            await _washOrderRepository.ReturnAsync(id);
+        }
         public async Task<bool> DeleteUpdateWashOrderAsync(WashOrder washOrder)
         {
             var allWashServices = await washServiceRepository.GetAllServicesByWashOrderIdAsync(washOrder.Id);

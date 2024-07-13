@@ -23,6 +23,7 @@ namespace AvtoMigBussines.CarWash.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Директор")]
+    [CheckSubscription]
     public class DirectorController : Controller
     {
         private readonly IWashOrderService _washOrderService;
@@ -35,6 +36,7 @@ namespace AvtoMigBussines.CarWash.Controllers
         private readonly IWashServiceService _washService;
         private readonly ISalarySettingService salarySettingService;
         private readonly IWashOrderTransactionService washOrderTransactionService;
+        private readonly INotificationCenterService notificationCenterService;
         public DirectorController(
             IWashOrderService washOrderService,
             WebSocketHandler webSocketHandler,
@@ -45,7 +47,8 @@ namespace AvtoMigBussines.CarWash.Controllers
             ApplicationDbContext context,
             IWashServiceService washService,
             ISalarySettingService salarySettingService,
-            IWashOrderTransactionService washOrderTransactionService)
+            IWashOrderTransactionService washOrderTransactionService,
+            INotificationCenterService notificationCenterService)
         {
             _washOrderService = washOrderService;
             _webSocketHandler = webSocketHandler;
@@ -57,8 +60,19 @@ namespace AvtoMigBussines.CarWash.Controllers
             _washService = washService;
             this.salarySettingService = salarySettingService;
             this.washOrderTransactionService = washOrderTransactionService;
+            this.notificationCenterService = notificationCenterService;
         }
-
+        [HttpPatch("ReturnOrder")]
+        public async Task<IActionResult> ReturnOrder([Required] int id)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            await _washOrderService.ReturnWashOrderAsync(id);
+            return Ok();
+        }
         [HttpPatch("DeleteWashServiceFromOrder")]
         public async Task<IActionResult> DeleteWashServiceFromOrder(int id)
         {
@@ -185,6 +199,17 @@ namespace AvtoMigBussines.CarWash.Controllers
 
             return Ok(washService);
         }
+        [HttpPatch("DeleteServiceFromWashOrder")]
+        public async Task<IActionResult> DeleteServiceFromWashOrder([Required] int id)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            await _washService.DeleteAsync(id);
+            return Ok("Wash service success deleted");
+        }
         [HttpPatch("DeleteWashOrder")]
         public async Task<IActionResult> DeleteWashOrder(int? id)
         {
@@ -224,6 +249,13 @@ namespace AvtoMigBussines.CarWash.Controllers
             }
 
             bool hasUpdated = await _washOrderService.CompleteUpdateWashOrderAsync(washOrder, user.Id);
+            var tokens = await GetAllUserTokensAsync(user.OrganizationId);
+            foreach (var token in tokens)
+            {
+                await SendPushNotification(token, "Машина помыта✅", $"Гос номер: {washOrder.CarNumber}, машина: {washOrder.Car.Name +" "+ washOrder.ModelCar.Name}", new { extraData = "Любые дополнительные данные" });
+            }
+            await notificationCenterService.
+                CreateNotificationAsync("Завершен заказ-наряд " + washOrder.ModelCar.Car.Name + " "+washOrder.ModelCar.Name+". Гос номер: "+washOrder.CarNumber+". Номер клиента: "+washOrder.PhoneNumber, user.Id);
 
             if (hasUpdated)
             {
@@ -281,8 +313,44 @@ namespace AvtoMigBussines.CarWash.Controllers
                 return Unauthorized(new { Message = "User is not authenticated." });
             }
             WashOrderDashboardDTO washOrderDashboardDTO = new WashOrderDashboardDTO();
+            washOrderDashboardDTO.CountOfNotCompletedServices = await _washService.GetCountOfNotCompletedServicesOnNotCompletedOrders(user.OrganizationId);
+            washOrderDashboardDTO.CountOfCompeltedServices = await _washService.GetCountOfCompletedServicesOnNotCompletedOrders(user.OrganizationId);
             washOrderDashboardDTO.CountOfNotCompletedOrders = await _washOrderService.GetCountOfNotCompletedWashOrdersAsync(user.Id, user.OrganizationId);
+            washOrderDashboardDTO.SummOfAllServices = await _washService.GetSummOfServicesOnNotCompletedWashOrders(user.OrganizationId);
             return Ok(washOrderDashboardDTO);
+        }
+        [HttpGet("ListOfClients")]
+        public async Task<IActionResult> ListOfClients()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            var list = await _washOrderService.GettAllCompletedWashOrdersFilterAsync(user.Id, user.OrganizationId);
+            return Ok(list);
+        }
+        [HttpGet("GetAllWashServicesWithPhoneNumber")]
+        public async Task<IActionResult> GetAllWashServicesWithPhoneNumber(string? phoneNumber)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            var list = await _washService.GetAllWashServicesWithPhoneNumber(phoneNumber);
+            return Ok(list);
+        }
+        [HttpGet("GetAllTransactions")]
+        public async Task<IActionResult> GetAllTransactions(DateTime? dateOfStart, DateTime? dateOfEnd)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            var transactions = await washOrderTransactionService.GetAllTransactions(user.Id, dateOfStart, dateOfEnd);
+            return Ok(transactions);
         }
         [HttpPost("CreateWashService")]
         public async Task<IActionResult> CreateWashService([FromBody] WashServiceDTO washServiceDTO)
@@ -319,7 +387,7 @@ namespace AvtoMigBussines.CarWash.Controllers
             {
                 // Логирование исключения
                 // _logger.LogError(ex, "An error occurred while creating the wash service.");
-                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+                return StatusCode(500, new { Message = "An error occurred while processing your request."+ex.Message });
             }
         }
         [HttpGet("GetSalaryUser")]
@@ -419,7 +487,7 @@ namespace AvtoMigBussines.CarWash.Controllers
                 var tokens = await GetAllUserTokensAsync(user.OrganizationId); // Метод для получения всех токенов пользователей
                 foreach (var token in tokens)
                 {
-                    await SendPushNotification(token, "Создана новая услуга", $"Название услуги: {service.Name}, цена: {service.Price}", new { extraData = "Любые дополнительные данные" });
+                    await SendPushNotification(token, "Создана новая услуга⚙️", $"Название услуги: {service.Name},\nцена: {service.Price}", new { extraData = "Любые дополнительные данные" });
                 }
 
                 await _webSocketHandler.SendMessageToAllAsync(message);
@@ -463,8 +531,9 @@ namespace AvtoMigBussines.CarWash.Controllers
                 var tokens = await GetAllUserTokensAsync(user.OrganizationId);
                 foreach (var token in tokens)
                 {
-                    await SendPushNotification(token, "Создан новый заказ-наряд", $"Детали: {washOrder.CarNumber}, цена: {washOrder.CarNumber}", new { extraData = "Любые дополнительные данные" });
+                    await SendPushNotification(token, "Машина приехала на мойку🌊", $"Гос номер: {washOrder.CarNumber} \n"+"Номер клиента: "+washOrder.PhoneNumber, new { extraData = "Не забудьте назначить услугу на заказ-наряд" });
                 }
+                await notificationCenterService.CreateNotificationAsync($"Создан новый заказ-наряд.  Гос номер: {washOrder.CarNumber}", user.Id);
 
                 return Ok(washOrder);
             }
@@ -475,7 +544,7 @@ namespace AvtoMigBussines.CarWash.Controllers
             catch (Exception ex)
             {
                 // _logger.LogError(ex, "An error occurred while creating the wash order.");
-                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+                return StatusCode(500, new { Message = "An error occurred while processing your request."+ex.Message});
             }
         }
 

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AvtoMigBussines.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240701205742_AvtoMigBussines")]
+    [Migration("20240712101115_AvtoMigBussines")]
     partial class AvtoMigBussines
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -141,6 +141,9 @@ namespace AvtoMigBussines.Migrations
                         .IsRequired()
                         .HasMaxLength(12)
                         .HasColumnType("nvarchar(12)");
+
+                    b.Property<double>("Password")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -368,6 +371,37 @@ namespace AvtoMigBussines.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NotifiactionTokens");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.NotificationCenter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationCenters");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.PaymentMethod", b =>

@@ -54,6 +54,24 @@ namespace AvtoMigBussines.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NotificationCenters",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationCenters", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Organizations",
                 columns: table => new
                 {
@@ -63,7 +81,8 @@ namespace AvtoMigBussines.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: true)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    Password = table.Column<double>(type: "float", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -619,6 +638,9 @@ namespace AvtoMigBussines.Migrations
 
             migrationBuilder.DropTable(
                 name: "NotifiactionTokens");
+
+            migrationBuilder.DropTable(
+                name: "NotificationCenters");
 
             migrationBuilder.DropTable(
                 name: "SalarySettings");

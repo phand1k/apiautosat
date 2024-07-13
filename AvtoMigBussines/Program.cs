@@ -45,6 +45,10 @@ builder.Services.AddScoped<IPaymentMethodService, PaymentMethodService>();
 builder.Services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
 builder.Services.AddScoped<IWashOrderTransactionService, WashOrderTransactionService>();
 builder.Services.AddScoped<IWashOrderTransactionRepository, WashOrderTransactionRepository>();
+builder.Services.AddScoped<INotificationCenterService, NotificationCenterService>();
+builder.Services.AddScoped<INotificationCenterRepository, NotificationCenterRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "AvtoMigAPI", Version = "v1" });

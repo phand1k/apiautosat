@@ -13,6 +13,7 @@ namespace AvtoMigBussines.CarWash.Services.Interfaces
         Task<bool> CreateWashOrderAsync(WashOrder washOrder, string aspNetUserId);
         Task UpdateWashOrderAsync(WashOrder washOrder);
         Task DeleteWashOrderAsync(int id);
+        Task ReturnWashOrderAsync(int id);
         Task <bool> CompleteUpdateWashOrderAsync(WashOrder washOrder, string? whoIsEnd);
         Task<bool> DeleteUpdateWashOrderAsync(WashOrder washOrder);
         Task<int?> GetCountOfNotCompletedWashOrdersAsync(string? aspNetUserId, int? organizationId);

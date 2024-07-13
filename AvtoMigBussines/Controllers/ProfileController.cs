@@ -16,10 +16,18 @@ namespace AvtoMigBussines.Controllers
     {
         private readonly IUserService userService;
         private readonly UserManager<AspNetUser> userManager;
-        public ProfileController(IUserService userService, UserManager<AspNetUser> userManager)
+        private readonly INotificationCenterService notificationCenterService;
+        public ProfileController(IUserService userService, UserManager<AspNetUser> userManager, INotificationCenterService notificationCenterService)
         {
             this.userService = userService;
             this.userManager = userManager;
+            this.notificationCenterService = notificationCenterService;
+        }
+        [HttpGet("Notifications")]
+        public async Task<IActionResult> Notifications()
+        {
+            var notificationData = await notificationCenterService.GetAllNotificationsAsync();
+            return Ok(notificationData);
         }
         [Route("GetProfileInfo")]
         [HttpGet]
