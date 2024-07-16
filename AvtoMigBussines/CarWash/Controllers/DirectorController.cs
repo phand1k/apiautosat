@@ -62,6 +62,22 @@ namespace AvtoMigBussines.CarWash.Controllers
             this.washOrderTransactionService = washOrderTransactionService;
             this.notificationCenterService = notificationCenterService;
         }
+        [HttpGet("GetDetailsTransaction")]
+        public async Task<IActionResult> GetDetailsTransaction([Required] int id)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            var transaction = await washOrderTransactionService.GetWashOrderTransactionByIdAsync(id);
+            if (transaction == null)
+            {
+                return NotFound(new { Message = "Wash service not found." });
+            }
+
+            return Ok(transaction);
+        }
         [HttpPatch("ReturnOrder")]
         public async Task<IActionResult> ReturnOrder([Required] int id)
         {

@@ -72,24 +72,6 @@ namespace AvtoMigBussines.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Organizations",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Number = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
-                    Password = table.Column<double>(type: "float", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Organizations", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "PaymentMethods",
                 columns: table => new
                 {
@@ -115,6 +97,20 @@ namespace AvtoMigBussines.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Statuses", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TypeOfOrganizations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TypeOfOrganizations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -155,6 +151,30 @@ namespace AvtoMigBussines.Migrations
                         name: "FK_ModelCars_Cars_CarId",
                         column: x => x.CarId,
                         principalTable: "Cars",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Organizations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Number = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    Password = table.Column<double>(type: "float", nullable: false),
+                    TypeOfOrganizationId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Organizations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Organizations_TypeOfOrganizations_TypeOfOrganizationId",
+                        column: x => x.TypeOfOrganizationId,
+                        principalTable: "TypeOfOrganizations",
                         principalColumn: "Id");
                 });
 
@@ -304,6 +324,53 @@ namespace AvtoMigBussines.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DetailingOrders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CarNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true),
+                    EndOfOrderAspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MileAge = table.Column<double>(type: "float", nullable: true),
+                    ClientFullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CarId = table.Column<int>(type: "int", nullable: true),
+                    ModelCarId = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    IsReturn = table.Column<bool>(type: "bit", nullable: true),
+                    IsOvered = table.Column<bool>(type: "bit", nullable: true),
+                    DateOfCompleteService = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DetailingOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DetailingOrders_AspNetUsers_AspNetUserId",
+                        column: x => x.AspNetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DetailingOrders_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DetailingOrders_ModelCars_ModelCarId",
+                        column: x => x.ModelCarId,
+                        principalTable: "ModelCars",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DetailingOrders_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Services",
                 columns: table => new
                 {
@@ -414,7 +481,7 @@ namespace AvtoMigBussines.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PaymentMethodId = table.Column<int>(type: "int", nullable: true),
-                    AspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Summ = table.Column<double>(type: "float", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: true),
@@ -424,6 +491,11 @@ namespace AvtoMigBussines.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WashOrderTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WashOrderTransactions_AspNetUsers_AspNetUserId",
+                        column: x => x.AspNetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_WashOrderTransactions_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
@@ -529,9 +601,34 @@ namespace AvtoMigBussines.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrders_AspNetUserId",
+                table: "DetailingOrders",
+                column: "AspNetUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrders_CarId",
+                table: "DetailingOrders",
+                column: "CarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrders_ModelCarId",
+                table: "DetailingOrders",
+                column: "ModelCarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrders_OrganizationId",
+                table: "DetailingOrders",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ModelCars_CarId",
                 table: "ModelCars",
                 column: "CarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Organizations_TypeOfOrganizationId",
+                table: "Organizations",
+                column: "TypeOfOrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SalarySettings_AspNetUserId",
@@ -582,6 +679,11 @@ namespace AvtoMigBussines.Migrations
                 name: "IX_WashOrders_OrganizationId",
                 table: "WashOrders",
                 column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WashOrderTransactions_AspNetUserId",
+                table: "WashOrderTransactions",
+                column: "AspNetUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WashOrderTransactions_OrganizationId",
@@ -637,6 +739,9 @@ namespace AvtoMigBussines.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "DetailingOrders");
+
+            migrationBuilder.DropTable(
                 name: "NotifiactionTokens");
 
             migrationBuilder.DropTable(
@@ -680,6 +785,9 @@ namespace AvtoMigBussines.Migrations
 
             migrationBuilder.DropTable(
                 name: "Cars");
+
+            migrationBuilder.DropTable(
+                name: "TypeOfOrganizations");
         }
     }
 }

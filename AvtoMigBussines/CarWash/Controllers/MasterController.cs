@@ -1,6 +1,8 @@
 ﻿using AvtoMigBussines.Authenticate;
 using AvtoMigBussines.CarWash.Models;
+using AvtoMigBussines.CarWash.Services.Implementations;
 using AvtoMigBussines.CarWash.Services.Interfaces;
+using AvtoMigBussines.Exceptions;
 using AvtoMigBussines.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,12 +21,14 @@ namespace AvtoMigBussines.CarWash.Controllers
         private readonly UserManager<AspNetUser> userManager;
         private readonly IServiceService _serviceService;
         private readonly IWashServiceService _washService;
-        public MasterController(IUserService userService, UserManager<AspNetUser> userManager, IServiceService serviceService, IWashServiceService washServiceService)
+        private readonly IWashOrderTransactionService washOrderTransactionService;
+        public MasterController(IUserService userService, UserManager<AspNetUser> userManager, IServiceService serviceService, IWashServiceService washServiceService, IWashOrderTransactionService washOrderTransactionService)
         {
             _userService = userService;
             this.userManager = userManager;
             _serviceService = serviceService;
             _washService = washServiceService;
+            this.washOrderTransactionService = washOrderTransactionService;
         }
         private async Task<AspNetUser> GetCurrentUserAsync()
         {
@@ -42,6 +46,38 @@ namespace AvtoMigBussines.CarWash.Controllers
 
             var user = await userManager.FindByIdAsync(aspNetUser.Id);
             return user;
+        }
+        [HttpPost("CreateWashOrderTransactionAsync")]
+        public async Task<IActionResult> CreateWashOrderTransactionAsync([FromBody] WashOrderTransaction transaction, int washOrderId)
+        {
+            if (washOrderId == null)
+            {
+                return BadRequest(new { Message = "Wash order ID is required." });
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            try
+            {
+                await washOrderTransactionService.CreateWashOrderTransactionAsync(transaction, user.Id, washOrderId);
+                return Ok(transaction);
+            }
+            catch (CustomException.WashOrderNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Логирование исключения
+                // _logger.LogError(ex, "An error occurred while creating the wash service.");
+                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+            }
         }
         [HttpGet("GetAllMyServices")]
         public async Task<IActionResult> GetAllMyServices()

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using AvtoMigBussines.Authenticate;
 using AvtoMigBussines.CarWash.Models;
+using AvtoMigBussines.Detailing.Models;
 
 namespace AvtoMigBussines.Data
 {
@@ -13,6 +14,8 @@ namespace AvtoMigBussines.Data
         {
 
         }
+        public DbSet<TypeOfOrganization> TypeOfOrganizations { get; set; }
+        public DbSet<DetailingOrder> DetailingOrders { get; set; }
         public DbSet<NotificationCenter> NotificationCenters { get; set; }
         public DbSet<WashOrderTransaction> WashOrderTransactions { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }

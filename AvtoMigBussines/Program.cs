@@ -18,6 +18,11 @@ using AvtoMigBussines.CarWash.Services.Interfaces;
 using AvtoMigBussines.CarWash.Services.Implementations;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
+using AvtoMigBussines.Models;
+using AvtoMigBussines.Detailing.Services.Interfaces;
+using AvtoMigBussines.Detailing.Services.Implementations;
+using AvtoMigBussines.Detailing.Repositories.Interfaces;
+using AvtoMigBussines.Detailing.Repositories.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -48,7 +53,10 @@ builder.Services.AddScoped<IWashOrderTransactionRepository, WashOrderTransaction
 builder.Services.AddScoped<INotificationCenterService, NotificationCenterService>();
 builder.Services.AddScoped<INotificationCenterRepository, NotificationCenterRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-
+builder.Services.AddScoped<IDetailingOrderService, DetailingOrderService>();
+builder.Services.AddScoped<IDetailingRepository, DetailingRepository>();
+builder.Services.AddScoped<ITypeOfOrganizationService, TypeOfOrganizationService>();
+builder.Services.AddScoped<ITypeOfOrganizationRepository,  TypeOfOrganizationRepository>();
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "AvtoMigAPI", Version = "v1" });
@@ -119,6 +127,17 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -136,7 +155,7 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseCors("AllowAllOrigins");
 app.MapControllers();
 
 // Middleware для обработки WebSocket соединений

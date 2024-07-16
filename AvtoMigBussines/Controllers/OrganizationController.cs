@@ -18,12 +18,20 @@ namespace AvtoMigBussines.Controllers
         private readonly ISubscriptionService subscriptionService;
         private readonly UserManager<AspNetUser> userManager;
         private readonly IUserService userService;
-        public OrganizationController(IOrganizationService organizationService, ISubscriptionService subscriptionService, UserManager<AspNetUser> userManager, IUserService userService)
+        private readonly ITypeOfOrganizationService typeOfOrganizationService;
+        public OrganizationController(ITypeOfOrganizationService typeOfOrganizationService, IOrganizationService organizationService, ISubscriptionService subscriptionService, UserManager<AspNetUser> userManager, IUserService userService)
         {
             this.organizationService = organizationService;
             this.subscriptionService = subscriptionService;
             this.userManager = userManager;
             this.userService = userService;
+            this.typeOfOrganizationService = typeOfOrganizationService;
+        }
+        [HttpGet("TypeOfOrganizationsList")]
+        public async Task<IActionResult> TypeOfOrganizationsList()
+        {
+            var list = await typeOfOrganizationService.GetAllTypesAsync();
+            return Ok(list);
         }
         [Route("CreateOrganization")]
         [HttpPost]

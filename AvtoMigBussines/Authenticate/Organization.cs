@@ -2,6 +2,7 @@
 using AvtoMigBussines.Models;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace AvtoMigBussines.Authenticate
@@ -25,6 +26,9 @@ namespace AvtoMigBussines.Authenticate
         [JsonIgnore]
         public ICollection<WashOrder> WashOrders { get; set; }
         public double Password { get; set; }
+        [ForeignKey("TypeOfOrganizationId")]
+        public int? TypeOfOrganizationId { get; set; }
+        public TypeOfOrganization? TypeOfOrganization { get; set; }
         public Organization()
         {
             WashOrders = new List<WashOrder>();
