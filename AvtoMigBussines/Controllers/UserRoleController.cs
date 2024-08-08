@@ -91,7 +91,8 @@ namespace AvtoMigBussines.Controllers
                 {
                     UserId = user.Id,
                     UserName = user.FullName,
-                    Roles = roles.ToList()
+                    Roles = roles.ToList(),
+                    PhoneNumber = user.PhoneNumber
                 };
 
                 userRoleViewModels.Add(userRoleViewModel);
@@ -107,7 +108,7 @@ namespace AvtoMigBussines.Controllers
                 return null;
             }
 
-            var aspNetUser = await _userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
             if (aspNetUser == null)
             {
                 return null;

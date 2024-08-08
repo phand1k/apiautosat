@@ -1,4 +1,5 @@
 ﻿using AvtoMigBussines.Authenticate;
+using AvtoMigBussines.Models;
 using AvtoMigBussines.Services.Implementations;
 using AvtoMigBussines.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +32,7 @@ namespace AvtoMigBussines.Controllers
                 return null;
             }
 
-            var aspNetUser = await _userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await _userManager.FindByEmailAsync(userName);
             if (aspNetUser == null)
             {
                 return null;
@@ -43,13 +44,14 @@ namespace AvtoMigBussines.Controllers
         [HttpGet("GetAllPaymentMethods")]
         public async Task<IActionResult> GetAllPaymentMethods()
         {
-            var user = await GetCurrentUserAsync();
-            if (user == null)
-            {
-                return Unauthorized(new { Message = "User is not authenticated." });
-            }
             var result = await paymentMethodService.GetAllAsync();
             return Ok(result);
+        }
+        [HttpPost("CreatePaymentMethod")]
+        public async Task<IActionResult> CreatePaymentMethod([FromBody] PaymentMethod paymentMethod)
+        {
+            await paymentMethodService.CreateAsync(paymentMethod);
+            return Ok(paymentMethod);
         }
     }
 }

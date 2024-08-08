@@ -1,4 +1,5 @@
-﻿using AvtoMigBussines.Authenticate;
+﻿using AvtoMigBussines.Attributes;
+using AvtoMigBussines.Authenticate;
 using AvtoMigBussines.Authenticate.Models;
 using AvtoMigBussines.Services.Implementations;
 using AvtoMigBussines.Services.Interfaces;
@@ -22,6 +23,24 @@ namespace AvtoMigBussines.Controllers
             this.userService = userService;
             this.userManager = userManager;
         }
+        [Authorize]
+        [HttpGet("CheckUserFullName")]
+        public async Task<IActionResult> CheckUserFullName()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user.FirstName == null || user.LastName == null)
+            {
+                return StatusCode(204);
+            }
+            return Ok();
+        }
+        [Authorize]
+        [HttpPatch("DeleteUser")]
+        public async Task<IActionResult> DeleteUser(string? id)
+        {
+            await userService.DeleteUserAsync(id);
+            return Ok("Succes for delete user: " + id);
+        }
         private async Task<AspNetUser> GetCurrentUserAsync()
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
@@ -30,7 +49,7 @@ namespace AvtoMigBussines.Controllers
                 return null;
             }
 
-            var aspNetUser = await userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
             if (aspNetUser == null)
             {
                 return null;
@@ -38,6 +57,12 @@ namespace AvtoMigBussines.Controllers
 
             var user = await userManager.FindByIdAsync(aspNetUser.Id);
             return user;
+        }
+        [HttpPost("InviteUser")]
+        public async Task<IActionResult> InviteUser(string? phoneNumber)
+        {
+
+            return Ok();
         }
         [HttpGet]
         [Authorize]
@@ -58,6 +83,17 @@ namespace AvtoMigBussines.Controllers
         {
             try
             {
+                var user = await userManager.FindByEmailAsync(model.PhoneNumber);
+                if (user == null || user.IsDeleted == true)
+                {
+                    return Unauthorized(new { Message = "Invalid username or password, or the account has been deleted." });
+                }
+
+                if (!await userManager.CheckPasswordAsync(user, model.Password))
+                {
+                    return Unauthorized(new { Message = "Invalid username or password." });
+                }
+
                 var token = await userService.LoginUserAsync(model);
                 return Ok(new { Token = token });
             }
@@ -70,6 +106,7 @@ namespace AvtoMigBussines.Controllers
                 return StatusCode(500, new { Message = "An error occurred while processing your request.", Details = ex.Message });
             }
         }
+
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register([Required] [FromBody] RegisterModel model)

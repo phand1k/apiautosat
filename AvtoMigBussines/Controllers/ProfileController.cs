@@ -23,6 +23,32 @@ namespace AvtoMigBussines.Controllers
             this.userManager = userManager;
             this.notificationCenterService = notificationCenterService;
         }
+
+        private async Task<AspNetUser> GetCurrentUserAsync()
+        {
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(userName))
+            {
+                return null;
+            }
+
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
+            if (aspNetUser == null)
+            {
+                return null;
+            }
+
+            var user = await userManager.FindByIdAsync(aspNetUser.Id);
+            return user;
+        }
+        [HttpPatch("EditProfile")]
+        public async Task<IActionResult> EditProfile(AspNetUser aspNetUser)
+        {
+            var user = await GetCurrentUserAsync();
+            await userService.UpdateUserAsync(aspNetUser);
+            return Ok("User profile success updated");
+        }
+
         [HttpGet("Notifications")]
         public async Task<IActionResult> Notifications()
         {
@@ -34,7 +60,7 @@ namespace AvtoMigBussines.Controllers
         public async Task<IActionResult> GetProfileInfo()
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
-            var aspNetUser = await userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
             var user = await userManager.FindByIdAsync(aspNetUser.Id);
             if (user == null)
             {

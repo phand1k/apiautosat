@@ -2,6 +2,7 @@
 using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Repositories.Interfaces;
 using AvtoMigBussines.CarWash.Services.Interfaces;
+using AvtoMigBussines.DTOModels;
 using AvtoMigBussines.Exceptions;
 using AvtoMigBussines.Models;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,10 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             _washOrderRepository = washOrderRepository;
             this.userManager = userManager;
             this.washServiceRepository = washServiceRepository;
+        }
+        public async Task<WashOrder> GetByIdWashOrderForComplete(int id)
+        {
+            return await _washOrderRepository.GetByIdForCompleteAsync(id);
         }
 
         public async Task<WashOrder> GetWashOrderByIdAsync(int id)

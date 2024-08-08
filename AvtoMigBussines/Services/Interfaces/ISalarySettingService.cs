@@ -7,7 +7,7 @@ namespace AvtoMigBussines.Services.Interfaces
     {
         Task<SalarySetting> GetSalarySettingForUser(string? userId, int? serviceId);
         Task<SalarySetting> GetSalarySettingByIdAsync(int id);
-        Task<IEnumerable<SalarySetting>> GetAllSalarySettingsAsync();
+        Task<IEnumerable<SalarySetting>> GetAllSalarySettingsAsync(int? organizationId);
         Task<bool> CreateSalarySettingAsync(SalarySettingDTO salarySettingDTO);
         Task UpdateSalarySettingAsync(SalarySetting salarySetting);
         Task DeleteSalarySettingAsync(int id);

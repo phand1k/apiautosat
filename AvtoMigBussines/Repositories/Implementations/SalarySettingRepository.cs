@@ -35,9 +35,10 @@ namespace AvtoMigBussines.Repositories.Implementations
             return await context.SalarySettings.Where(x => x.IsDeleted == false).AnyAsync(c => c.AspNetUserId == aspNetUserId && c.ServiceId == serviceId);
         }
 
-        public async Task<IEnumerable<SalarySetting>> GetAllAsync()
+        public async Task<IEnumerable<SalarySetting>> GetAllAsync(int? organizationId)
         {
-            throw new NotImplementedException();
+            return await context.SalarySettings.Include(x=>x.Service).Include(x=>x.AspNetUser).
+                Where(x=>x.IsDeleted == false && x.OrganizationId == organizationId).ToListAsync();
         }
 
         public async Task<SalarySetting> GetByIdAsync(int id)

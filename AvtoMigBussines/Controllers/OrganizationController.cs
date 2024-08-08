@@ -58,7 +58,7 @@ namespace AvtoMigBussines.Controllers
         public async Task<IActionResult> GetSubscriptionOrganization()
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
-            var aspNetUser = await userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
             var user = await userManager.FindByIdAsync(aspNetUser.Id);
             if (user == null)
             {
@@ -102,7 +102,7 @@ namespace AvtoMigBussines.Controllers
                 return null;
             }
 
-            var aspNetUser = await userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
             if (aspNetUser == null)
             {
                 return null;
@@ -117,7 +117,7 @@ namespace AvtoMigBussines.Controllers
         public async Task<IActionResult> GetOrganization()
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
-            var aspNetUser = await userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
             var user = await userManager.FindByIdAsync(aspNetUser.Id);
             if (user == null)
             {

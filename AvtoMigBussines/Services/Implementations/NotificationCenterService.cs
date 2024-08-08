@@ -15,12 +15,12 @@ namespace AvtoMigBussines.Services.Implementations
             this.notificationCenterRepository = notificationCenterRepository;
             this.userManager = userManager;
         }
-        public async Task<bool> CreateNotificationAsync(string? message, string? aspNetUserId)
+        public async Task<bool> CreateNotificationAsync(string? message, string? aspNetUserId, string? title)
         {
             NotificationCenter notification = new NotificationCenter();
             var user = await userManager.FindByIdAsync(aspNetUserId);
             notification.OrganizationId = user.OrganizationId;
-            notification.Title = "Завершен заказ-наряд";
+            notification.Title = title;
             notification.Description = message;
             notification.AspNetUserId = aspNetUserId;
             await notificationCenterRepository.AddAsync(notification);

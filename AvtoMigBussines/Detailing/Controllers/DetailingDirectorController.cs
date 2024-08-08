@@ -37,7 +37,7 @@ namespace AvtoMigBussines.Detailing.Controllers
                 return null;
             }
 
-            var aspNetUser = await _userService.GetUserByPhoneNumberAsync(userName);
+            var aspNetUser = await userManager.FindByEmailAsync(userName);
             if (aspNetUser == null)
             {
                 return null;

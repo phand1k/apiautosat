@@ -11,10 +11,12 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
     {
         private readonly IWashOrderTransactionRepository washOrderTransactionRepository;
         private readonly UserManager<AspNetUser> userManager;
-        public WashOrderTransactionService(IWashOrderTransactionRepository washTransactionRepository, UserManager<AspNetUser> userManager)
+        private readonly IWashServiceService _washService;
+        public WashOrderTransactionService(IWashOrderTransactionRepository washTransactionRepository, UserManager<AspNetUser> userManager, IWashServiceService washServiceService)
         {
             this.washOrderTransactionRepository = washTransactionRepository;
             this.userManager = userManager;
+            _washService = washServiceService;
         }
         public async Task<IEnumerable<WashOrderTransaction>> GetAllTransactions(string? aspNetUserId, DateTime? dateOfStart, DateTime? dateOfEnd)
         {
@@ -27,6 +29,7 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             washOrderTransaction.AspNetUserId = aspNetUserId;
             washOrderTransaction.OrganizationId = user.OrganizationId;
             washOrderTransaction.WashOrderId = washOrderId;
+            washOrderTransaction.ToPay = await _washService.GetSummAllServices(washOrderId);
             await washOrderTransactionRepository.AddAsync(washOrderTransaction);
             return true;
         }

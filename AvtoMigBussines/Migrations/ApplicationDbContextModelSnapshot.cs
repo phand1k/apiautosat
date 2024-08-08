@@ -197,7 +197,7 @@ namespace AvtoMigBussines.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EndOfOrderAspNetUserId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool?>("IsDeleted")
                         .HasColumnType("bit");
@@ -222,6 +222,8 @@ namespace AvtoMigBussines.Migrations
                     b.HasIndex("AspNetUserId");
 
                     b.HasIndex("CarId");
+
+                    b.HasIndex("EndOfOrderAspNetUserId");
 
                     b.HasIndex("ModelCarId");
 
@@ -254,6 +256,9 @@ namespace AvtoMigBussines.Migrations
                         .HasColumnType("int");
 
                     b.Property<double?>("Summ")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("ToPay")
                         .HasColumnType("float");
 
                     b.Property<int?>("WashOrderId")
@@ -798,6 +803,10 @@ namespace AvtoMigBussines.Migrations
                         .WithMany()
                         .HasForeignKey("CarId");
 
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "EndOfOrderAspNetUser")
+                        .WithMany()
+                        .HasForeignKey("EndOfOrderAspNetUserId");
+
                     b.HasOne("AvtoMigBussines.Models.ModelCar", "ModelCar")
                         .WithMany()
                         .HasForeignKey("ModelCarId");
@@ -809,6 +818,8 @@ namespace AvtoMigBussines.Migrations
                     b.Navigation("AspNetUser");
 
                     b.Navigation("Car");
+
+                    b.Navigation("EndOfOrderAspNetUser");
 
                     b.Navigation("ModelCar");
 

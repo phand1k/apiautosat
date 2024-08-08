@@ -1,10 +1,12 @@
 ﻿using AvtoMigBussines.CarWash.Models;
+using AvtoMigBussines.DTOModels;
 using AvtoMigBussines.Models;
 
 namespace AvtoMigBussines.CarWash.Repositories.Interfaces
 {
     public interface IWashOrderRepository
     {
+        Task<WashOrder> GetByIdForCompleteAsync(int id);
         Task<WashOrder> GetByIdAsync(int id);
         Task<IEnumerable<WashOrder>> GetAllAsync();
         Task AddAsync(WashOrder carWashOrder);

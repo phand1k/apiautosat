@@ -74,7 +74,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
 
         public async Task<IEnumerable<WashService>> GetAllWashServicesOnOrder(int? orderId)
         {
-            return await _context.WashServices.Include(x => x.Service)
+            return await _context.WashServices.Include(x => x.Service).Include(x=>x.AspNetUser)
                 .Where(x => x.WashOrderId == orderId && x.IsDeleted == false).ToListAsync();
         }
 
@@ -107,8 +107,10 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
 
         public async Task<IEnumerable<WashService>> GetAllServicesByWashOrderIdAsync(int id)
         {
-            return await _context.WashServices.Where(x => x.IsOvered == false)
-                .Where(x => x.WashOrderId == id && x.IsDeleted == false).ToListAsync();
+            return await _context.WashServices
+                .Where(x => x.WashOrderId == id).ToListAsync();
+            //return await _context.WashServices.Where(x => x.IsOvered == false)
+            //  .Where(x => x.WashOrderId == id && x.IsDeleted == false).ToListAsync();
         }
 
         public async Task<int?> GetAllNotCompletedServicesForNotCompeltedWashOrders(int? organizationId)

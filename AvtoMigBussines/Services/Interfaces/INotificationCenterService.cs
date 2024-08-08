@@ -6,7 +6,7 @@ namespace AvtoMigBussines.Services.Interfaces
     {
         Task<NotificationCenter> GetNotificationByIdAsync(int id);
         Task<IEnumerable<NotificationCenter>> GetAllNotificationsAsync();
-        Task<bool> CreateNotificationAsync(string message, string? aspNetUserId);
+        Task<bool> CreateNotificationAsync(string message, string? aspNetUserId, string? title);
         Task UpdateNotificationAsync(NotificationCenter notification);
         Task DeleteNotificationAsync(int id);
     }

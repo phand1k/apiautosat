@@ -406,7 +406,7 @@ namespace AvtoMigBussines.Migrations
                     CarNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrganizationId = table.Column<int>(type: "int", nullable: true),
-                    EndOfOrderAspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EndOfOrderAspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CarId = table.Column<int>(type: "int", nullable: true),
                     ModelCarId = table.Column<int>(type: "int", nullable: true),
@@ -422,6 +422,11 @@ namespace AvtoMigBussines.Migrations
                     table.ForeignKey(
                         name: "FK_WashOrders_AspNetUsers_AspNetUserId",
                         column: x => x.AspNetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WashOrders_AspNetUsers_EndOfOrderAspNetUserId",
+                        column: x => x.EndOfOrderAspNetUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -484,6 +489,7 @@ namespace AvtoMigBussines.Migrations
                     AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Summ = table.Column<double>(type: "float", nullable: true),
+                    ToPay = table.Column<double>(type: "float", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: true),
                     OrganizationId = table.Column<int>(type: "int", nullable: true),
                     WashOrderId = table.Column<int>(type: "int", nullable: true)
@@ -669,6 +675,11 @@ namespace AvtoMigBussines.Migrations
                 name: "IX_WashOrders_CarId",
                 table: "WashOrders",
                 column: "CarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WashOrders_EndOfOrderAspNetUserId",
+                table: "WashOrders",
+                column: "EndOfOrderAspNetUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WashOrders_ModelCarId",

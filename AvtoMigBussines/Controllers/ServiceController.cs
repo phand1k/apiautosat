@@ -1,30 +1,24 @@
 ﻿using AvtoMigBussines.Authenticate;
-using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Services.Interfaces;
 using AvtoMigBussines.Data;
-using AvtoMigBussines.DTOModels;
 using AvtoMigBussines.Exceptions;
 using AvtoMigBussines.Models;
-using AvtoMigBussines.Services.Implementations;
 using AvtoMigBussines.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
-using System.Net.Http;
-using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Text;
 
-namespace AvtoMigBussines.CarWash.Controllers
+namespace AvtoMigBussines.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Директор")]
+    [Authorize]
     [CheckSubscription]
-    public class DirectorController : Controller
+    public class ServiceController : Controller
     {
         private readonly IWashOrderService _washOrderService;
         private readonly WebSocketHandler _webSocketHandler;
@@ -37,7 +31,7 @@ namespace AvtoMigBussines.CarWash.Controllers
         private readonly ISalarySettingService salarySettingService;
         private readonly IWashOrderTransactionService washOrderTransactionService;
         private readonly INotificationCenterService notificationCenterService;
-        public DirectorController(
+        public ServiceController(
             IWashOrderService washOrderService,
             WebSocketHandler webSocketHandler,
             IUserService userService,
@@ -62,39 +56,6 @@ namespace AvtoMigBussines.CarWash.Controllers
             this.washOrderTransactionService = washOrderTransactionService;
             this.notificationCenterService = notificationCenterService;
         }
-
-        [HttpPatch("DeleteUser")]
-        public async Task<IActionResult> DeleteUser([Required]string id)
-        {
-            await _userService.DeleteUserAsync(id);
-            return Ok("Succes for delete user: "+ id);
-        }
-
-        [HttpGet("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            var user = await GetCurrentUserAsync();
-            if (user == null)
-            {
-                return Unauthorized(new { Message = "User is not authenticated." });
-            }
-
-            var users = await _userService.GetAllUsersAsync(user.OrganizationId);
-            return Ok(users);
-        }
-
-        [HttpGet("GetAllWashServicesWithPhoneNumber")]
-        public async Task<IActionResult> GetAllWashServicesWithPhoneNumber(string? phoneNumber)
-        {
-            var user = await GetCurrentUserAsync();
-            if (user == null)
-            {
-                return Unauthorized(new { Message = "User is not authenticated." });
-            }
-            var list = await _washService.GetAllWashServicesWithPhoneNumber(phoneNumber);
-            return Ok(list);
-        }
-        
 
         private async Task<AspNetUser> GetCurrentUserAsync()
         {
@@ -152,5 +113,78 @@ namespace AvtoMigBussines.CarWash.Controllers
             var response = await client.PostAsync("https://exp.host/--/api/v2/push/send", content);
             response.EnsureSuccessStatusCode();
         }
+
+
+        [HttpPost("DeleteService")]
+        public async Task<IActionResult> DeleteService(int id)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+
+            var service = await _serviceService.GetServiceByIdAsync(id);
+            if (service == null)
+            {
+                return NotFound(new { Message = "Service not found." });
+            }
+
+            await _serviceService.DeleteServiceAsync(service.Id);
+            return Ok(service);
+        }
+        [HttpPost("CreateService")]
+        public async Task<IActionResult> CreateService([FromBody] Service service)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _serviceService.CreateServiceAsync(service, user.Id);
+
+                var message = JsonConvert.SerializeObject(new { name = service.Name, price = service.Price });
+                var tokens = await GetAllUserTokensAsync(user.OrganizationId); // Метод для получения всех токенов для уведомлений в приложении пользователей
+                foreach (var token in tokens)
+                {
+                    await SendPushNotification(token, "Создана новая услуга⚙️", $"Название услуги: {service.Name},\nцена: {service.Price}", new { extraData = "Любые дополнительные данные" });
+                }
+
+                await _webSocketHandler.SendMessageToAllAsync(message);
+
+                return Ok(service);
+            }
+            catch (CustomException.ServiceExistsException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "An error occurred while creating the service.");
+                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+            }
+        }
+
+
+        [HttpGet("GetAllServices")]
+        public async Task<IActionResult> GetAllServices()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            var result = await _serviceService.GetAllServicesAsync(user.Id);
+            return Ok(result);
+        }
+
     }
 }

@@ -6,7 +6,7 @@ namespace AvtoMigBussines.Repositories.Interfaces
     {
         Task<SalarySetting> GetSalaryForUser(string? userId, int? serviceId);
         Task<SalarySetting> GetByIdAsync(int id);
-        Task<IEnumerable<SalarySetting>> GetAllAsync();
+        Task<IEnumerable<SalarySetting>> GetAllAsync(int? organizationId);
         Task AddAsync(SalarySetting salarySetting);
         Task UpdateAsync(SalarySetting salarySetting);
         Task DeleteAsync(int id);

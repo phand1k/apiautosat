@@ -55,9 +55,9 @@ namespace AvtoMigBussines.Services.Implementations
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<SalarySetting>> GetAllSalarySettingsAsync()
+        public async Task<IEnumerable<SalarySetting>> GetAllSalarySettingsAsync(int? organizationId)
         {
-            throw new NotImplementedException();
+            return await salarySettingRepository.GetAllAsync(organizationId);
         }
 
         public Task<SalarySetting> GetSalarySettingByIdAsync(int id)

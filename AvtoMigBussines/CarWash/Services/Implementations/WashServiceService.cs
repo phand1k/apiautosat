@@ -17,14 +17,21 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
     {
         private readonly IWashServiceRepository _washServiceRepository;
         private readonly UserManager<AspNetUser> userManager;
-        public WashServiceService(IWashServiceRepository washServiceRepository, UserManager<AspNetUser> userManager)
+        private readonly IWashOrderRepository _washOrderRepository;
+        public WashServiceService(IWashServiceRepository washServiceRepository, UserManager<AspNetUser> userManager, IWashOrderRepository washOrderRepository)
         {
             _washServiceRepository = washServiceRepository;
             this.userManager = userManager;
+            _washOrderRepository = washOrderRepository;
         }
         public async Task<bool> CreateAsync(WashServiceDTO washServiceDTO, string aspNetUserId)
         {
             var user = await userManager.FindByIdAsync(aspNetUserId);
+            var washOrder = await _washOrderRepository.GetByIdAsync(Convert.ToInt32(washServiceDTO.WashOrderId));
+            if (washOrder == null)
+            {
+                throw new CustomException.WashOrderNotFoundException("Wash order not found.");
+            }
             if (await _washServiceRepository.ExistsWithName(washServiceDTO.WashOrderId, washServiceDTO.ServiceId))
             {
                 throw new CustomException.WashOrderExistsException("Wash service with the same service already exists.");

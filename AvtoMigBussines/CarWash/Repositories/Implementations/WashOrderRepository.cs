@@ -2,6 +2,7 @@
 using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Repositories.Interfaces;
 using AvtoMigBussines.Data;
+using AvtoMigBussines.DTOModels;
 using AvtoMigBussines.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,10 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         public WashOrderRepository(ApplicationDbContext context)
         {
             _context = context;
+        }
+        public async Task<WashOrder> GetByIdForCompleteAsync(int id)
+        {
+            return await _context.WashOrders.Include(x => x.ModelCar.Car).Include(x => x.AspNetUser).Where(x=>x.IsDeleted == false && x.IsOvered == false).FirstOrDefaultAsync(p => p.Id == id);
         }
         public async Task<WashOrder> GetByIdAsync(int id)
         {

@@ -23,6 +23,7 @@ using AvtoMigBussines.Detailing.Services.Interfaces;
 using AvtoMigBussines.Detailing.Services.Implementations;
 using AvtoMigBussines.Detailing.Repositories.Interfaces;
 using AvtoMigBussines.Detailing.Repositories.Implementations;
+using AvtoMigBussines.Attributes;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
@@ -120,6 +121,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
     };
 });
+builder.Services.AddScoped<CheckIsDeletedAttribute>();
 
 builder.Services.AddSingleton<WebSocketHandler>();
 builder.Services.AddHttpClient();
@@ -137,7 +139,6 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod();
         });
 });
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
