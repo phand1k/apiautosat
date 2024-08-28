@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AvtoMigBussines.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240724124636_AvtoMigBussines")]
+    [Migration("20240821194045_AvtoMigBussines")]
     partial class AvtoMigBussines
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -207,6 +207,9 @@ namespace AvtoMigBussines.Migrations
                     b.Property<bool?>("IsOvered")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsReady")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsReturn")
                         .HasColumnType("bit");
 
@@ -290,6 +293,9 @@ namespace AvtoMigBussines.Migrations
                     b.Property<string>("AspNetUserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("CreatedAspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime?>("DateOfCompleteService")
                         .HasColumnType("datetime2");
 
@@ -318,17 +324,21 @@ namespace AvtoMigBussines.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("WhomAspNetUserId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("CreatedAspNetUserId");
 
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("ServiceId");
 
                     b.HasIndex("WashOrderId");
+
+                    b.HasIndex("WhomAspNetUserId");
 
                     b.ToTable("WashServices");
                 });
@@ -372,6 +382,9 @@ namespace AvtoMigBussines.Migrations
                     b.Property<bool?>("IsOvered")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsReady")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsReturn")
                         .HasColumnType("bit");
 
@@ -387,6 +400,9 @@ namespace AvtoMigBussines.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<double?>("Prepayment")
+                        .HasColumnType("float");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AspNetUserId");
@@ -398,6 +414,103 @@ namespace AvtoMigBussines.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("DetailingOrders");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingPriceList", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("CarId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ModelCarId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Price")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("DetailingPriceLists");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateOfCompleteService")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DetailingOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsOvered")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Price")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Salary")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WhomAspNetUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("DetailingOrderId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("DetailingServices");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.Car", b =>
@@ -418,6 +531,36 @@ namespace AvtoMigBussines.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Cars");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.Client", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("CarNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DateOfRegister")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("TelegramUserId")
+                        .IsRequired()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clients");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.ModelCar", b =>
@@ -861,6 +1004,10 @@ namespace AvtoMigBussines.Migrations
                         .WithMany()
                         .HasForeignKey("AspNetUserId");
 
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "CreatedAspNetUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedAspNetUserId");
+
                     b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
                         .WithMany()
                         .HasForeignKey("OrganizationId");
@@ -873,13 +1020,21 @@ namespace AvtoMigBussines.Migrations
                         .WithMany()
                         .HasForeignKey("WashOrderId");
 
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "WhomAspNetUser")
+                        .WithMany()
+                        .HasForeignKey("WhomAspNetUserId");
+
                     b.Navigation("AspNetUser");
+
+                    b.Navigation("CreatedAspNetUser");
 
                     b.Navigation("Organization");
 
                     b.Navigation("Service");
 
                     b.Navigation("WashOrder");
+
+                    b.Navigation("WhomAspNetUser");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingOrder", b =>
@@ -907,6 +1062,54 @@ namespace AvtoMigBussines.Migrations
                     b.Navigation("ModelCar");
 
                     b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingPriceList", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
+                        .WithMany()
+                        .HasForeignKey("AspNetUserId");
+
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.HasOne("AvtoMigBussines.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId");
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingService", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
+                        .WithMany()
+                        .HasForeignKey("AspNetUserId");
+
+                    b.HasOne("AvtoMigBussines.Detailing.Models.DetailingOrder", "DetailingOrder")
+                        .WithMany()
+                        .HasForeignKey("DetailingOrderId");
+
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.HasOne("AvtoMigBussines.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId");
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("DetailingOrder");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.ModelCar", b =>

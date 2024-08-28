@@ -97,13 +97,31 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<WashOrder>> GettAllCompletedFilterAsync(string? aspNetUserId, int? organizationId)
+        public async Task<IEnumerable<WashOrder>> GettAllCompletedFilterAsync(string? aspNetUserId, int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd)
         {
-            return await _context.WashOrders
-                .Include(x => x.ModelCar.Car).Where(x => x.IsOvered == true && x.IsDeleted == false)
-                .Where(x => x.OrganizationId == organizationId)
-                .ToListAsync();
+            var query = _context.WashOrders
+                .Include(x => x.ModelCar.Car)
+                .Include(x => x.AspNetUser) // Подгружаем данные о пользователе, создавшем заказ
+                .Include(x => x.EndOfOrderAspNetUser) // Подгружаем данные о пользователе, завершившем заказ
+                .Where(x => x.IsOvered == true && x.IsDeleted == false)
+                .Where(x => x.OrganizationId == organizationId);
+
+            // Фильтрация по дате начала
+            if (dateOfStart.HasValue)
+            {
+                query = query.Where(x => x.DateOfCompleteService >= dateOfStart.Value);
+            }
+
+            // Фильтрация по дате окончания
+            if (dateOfEnd.HasValue)
+            {
+                query = query.Where(x => x.DateOfCompleteService <= dateOfEnd.Value);
+            }
+
+            return await query.ToListAsync();
         }
+
+
 
         public async Task<int?> GetAllNotCompletedCountFilterAsync(string? aspNetUserId, int? organizationId)
         {

@@ -16,5 +16,10 @@ namespace AvtoMigBussines.Services.Implementations
         {
             return await typeOfOrganizationRepository.GetAllAsync();
         }
+
+        public async Task<string> GetTypeOrganizationIdAsync(int? id)
+        {
+            return await typeOfOrganizationRepository.GetByIdAsync(id);
+        }
     }
 }

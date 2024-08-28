@@ -1,11 +1,13 @@
 ﻿using AvtoMigBussines.Attributes;
 using AvtoMigBussines.Authenticate;
 using AvtoMigBussines.Authenticate.Models;
+using AvtoMigBussines.Data;
 using AvtoMigBussines.Services.Implementations;
 using AvtoMigBussines.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using static AvtoMigBussines.Exceptions.CustomException;
@@ -18,10 +20,34 @@ namespace AvtoMigBussines.Controllers
     {
         private readonly IUserService userService;
         private readonly UserManager<AspNetUser> userManager;
-        public AuthenticateController(IUserService userService, UserManager<AspNetUser> userManager)
+        private readonly ApplicationDbContext context;
+        public AuthenticateController(IUserService userService, UserManager<AspNetUser> userManager, ApplicationDbContext context)
         {
             this.userService = userService;
             this.userManager = userManager;
+            this.context = context;
+        }
+
+        [Authorize]
+        [HttpGet("InviteUser")]
+        public async Task<IActionResult> InviteUser()
+        {
+            var user = await context.Users
+       .Include(u => u.Organization) // Убедитесь, что Organization загружено
+       .FirstOrDefaultAsync(u => u.Id == GetCurrentUserAsync().Result.Id); // Метод для получения текущего пользователя
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (user.Organization == null)
+            {
+                return BadRequest("Организация не найдена для текущего пользователя.");
+            }
+
+            var inviteUrl = "https://gchelper.kz/invite-user.html?organizationId=" + user.Organization.Number;
+            return Ok(inviteUrl);
         }
         [Authorize]
         [HttpGet("CheckUserFullName")]
@@ -57,12 +83,6 @@ namespace AvtoMigBussines.Controllers
 
             var user = await userManager.FindByIdAsync(aspNetUser.Id);
             return user;
-        }
-        [HttpPost("InviteUser")]
-        public async Task<IActionResult> InviteUser(string? phoneNumber)
-        {
-
-            return Ok();
         }
         [HttpGet]
         [Authorize]

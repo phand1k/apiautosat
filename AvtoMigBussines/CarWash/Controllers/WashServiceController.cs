@@ -155,8 +155,6 @@ namespace AvtoMigBussines.CarWash.Controllers
 
             return Ok(washService);
         }
-
-
         [HttpPost("CreateWashService")]
         public async Task<IActionResult> CreateWashService([FromBody] WashServiceDTO washServiceDTO)
         {

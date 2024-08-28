@@ -24,10 +24,13 @@ using AvtoMigBussines.Detailing.Services.Implementations;
 using AvtoMigBussines.Detailing.Repositories.Interfaces;
 using AvtoMigBussines.Detailing.Repositories.Implementations;
 using AvtoMigBussines.Attributes;
+using StackExchange.Redis;
+using AvtoMigBussines.RedisResults.Detailing.Interface;
+using AvtoMigBussines.RedisResults.Detailing.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration;
-
+var botToken = builder.Configuration["TelegramBotToken"];
 // Add services to the container.
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 builder.Services.AddScoped<ICarService, CarService>();
@@ -56,8 +59,19 @@ builder.Services.AddScoped<INotificationCenterRepository, NotificationCenterRepo
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IDetailingOrderService, DetailingOrderService>();
 builder.Services.AddScoped<IDetailingRepository, DetailingRepository>();
+builder.Services.AddScoped<IDetailingServiceRepository, DetailingServiceRepository>();
+builder.Services.AddScoped<IDetailingServiceService,  DetailingServiceService>();
 builder.Services.AddScoped<ITypeOfOrganizationService, TypeOfOrganizationService>();
 builder.Services.AddScoped<ITypeOfOrganizationRepository,  TypeOfOrganizationRepository>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<ICacheService, CacheService>();
+
+builder.Services.AddScoped<IDetailingPriceListRepository, DetailingPriceListRepository>();
+builder.Services.AddScoped<IDetailingPriceListService, DetailingPriceListService>();
+
+
+builder.Services.AddScoped<IClientService>(sp =>
+    new ClientService(sp.GetRequiredService<IClientRepository>(), botToken));
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "AvtoMigAPI", Version = "v1" });

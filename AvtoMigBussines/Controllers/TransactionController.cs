@@ -84,6 +84,43 @@ namespace AvtoMigBussines.Controllers
 
             return Ok(transaction);
         }
+        [HttpPost("CreateTransactionAsync")]
+        public async Task<IActionResult> CreateTransactionAsync([FromBody] WashOrderTransaction transaction, int washOrderId)
+        {
+            var washOrder = await _washOrderService.GetByIdWashOrderForComplete(washOrderId);
+            if (washOrder == null)
+            {
+                return NotFound(new { Message = "Wash order not found." });
+            }
+            if (washOrderId == null)
+            {
+                return BadRequest(new { Message = "Wash order ID is required." });
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            try
+            {
+                await washOrderTransactionService.CreateWashOrderTransactionAsync(transaction, user.Id, washOrderId);
+                return Ok(transaction);
+            }
+            catch (CustomException.WashOrderNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Логирование исключения
+                // _logger.LogError(ex, "An error occurred while creating the wash service.");
+                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+            }
+        }
         [HttpPost("CreateWashOrderTransactionAsync")]
         public async Task<IActionResult> CreateWashOrderTransactionAsync([FromBody] WashOrderTransaction transaction, int washOrderId)
         {
@@ -130,6 +167,13 @@ namespace AvtoMigBussines.Controllers
             {
                 return Unauthorized(new { Message = "User is not authenticated." });
             }
+            if (!dateOfStart.HasValue && !dateOfEnd.HasValue)
+            {
+                DateTime today = DateTime.Today;
+                dateOfStart = today.AddHours(5);  // Сегодня в 05:00
+                dateOfEnd = today.AddHours(23).AddMinutes(59).AddSeconds(59);  // Сегодня в 23:59:59
+            }
+
             var transactions = await washOrderTransactionService.GetAllTransactions(user.Id, dateOfStart, dateOfEnd);
             return Ok(transactions);
         }

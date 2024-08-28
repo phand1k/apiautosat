@@ -86,8 +86,14 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
 
         public async Task<WashService> GetByIdAsync(int id)
         {
-            return await _context.WashServices.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+            return await _context.WashServices
+                .Include(x => x.Service)
+                .Include(x => x.AspNetUser)  // Пользователь, назначенный на услугу
+                .Include(x => x.WhomAspNetUser)  // Пользователь, который завершил услугу
+                .Include(x => x.Service.AspNetUser)  // Пользователь, который создал услугу
+                .FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
         }
+
 
         public async Task<int?> GetCountAllServices(int? orderId)
         {

@@ -1,4 +1,5 @@
-﻿using AvtoMigBussines.Detailing.Models;
+﻿using AvtoMigBussines.CarWash.Models;
+using AvtoMigBussines.Detailing.Models;
 
 namespace AvtoMigBussines.Detailing.Services.Interfaces
 {
@@ -6,7 +7,9 @@ namespace AvtoMigBussines.Detailing.Services.Interfaces
     {
         Task<DetailingOrder> GetDetailingOrderByIdAsync(int id);
         Task<IEnumerable<DetailingOrder>> GetAllDetailingOrdersFilterAsync(string? aspNetUserId, int? organizationId);
+        Task<IEnumerable<DetailingOrder>> GetAllOrdersNotCompletedFilterAsync(string? aspNetUserId, int? organizationId);
         Task<bool> CreateDetailingOrderAsync(DetailingOrder detailingOrder, string aspNetUserId);
-        Task DeleteDetailingOrderAsync(int id);
+        Task<bool> DeleteUpdateDetailingOrderAsync(DetailingOrder detailingOrder);
+
     }
 }

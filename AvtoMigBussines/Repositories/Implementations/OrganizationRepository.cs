@@ -19,7 +19,7 @@ namespace AvtoMigBussines.Repositories.Implementations
         }
         public async Task<Organization> GetByIdAsync(int? id)
         {
-            return await _context.Organizations.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+            return await _context.Organizations.Include(x=>x.TypeOfOrganization).FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
         }
         public async Task<Organization> GetByNumberAsync(string number)
         {

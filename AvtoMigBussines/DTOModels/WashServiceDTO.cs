@@ -15,5 +15,6 @@
         public DateTime? DateOfCreated { get; set; }
         public DateTime? DateOfCompleted { get; set; }
         public bool? IsOvered { get; set; }
+        public string? CreatedAspNetUserId { get; set; }
     }
 }

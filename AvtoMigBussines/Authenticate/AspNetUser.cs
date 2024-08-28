@@ -12,7 +12,7 @@ namespace AvtoMigBussines.Authenticate
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? SurName { get; set; }
-        public DateTime DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime DateOfCreated { get; set; } = DateTime.UtcNow;
         [ForeignKey("OrganizationId")]
         public int? OrganizationId { get; set; }
         [JsonIgnore]

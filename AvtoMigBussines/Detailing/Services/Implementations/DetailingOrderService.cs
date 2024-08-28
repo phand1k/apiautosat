@@ -14,10 +14,12 @@ namespace AvtoMigBussines.Detailing.Services.Implementations
     {
         private readonly IDetailingRepository detailingRepository;
         private readonly UserManager<AspNetUser> userManager;
-        public DetailingOrderService(IDetailingRepository detailingRepository, UserManager<AspNetUser> userManager)
+        private readonly IDetailingServiceRepository detailingServiceRepository;
+        public DetailingOrderService(IDetailingRepository detailingRepository, UserManager<AspNetUser> userManager, IDetailingServiceRepository detailingServiceRepository)
         {
             this.detailingRepository = detailingRepository;
             this.userManager = userManager;
+            this.detailingServiceRepository = detailingServiceRepository;
         }
         public async Task<bool> CreateDetailingOrderAsync(DetailingOrder detailingOrder, string aspNetUserId)
         {
@@ -31,19 +33,35 @@ namespace AvtoMigBussines.Detailing.Services.Implementations
 
             detailingOrder.AspNetUserId = aspNetUserId;
             detailingOrder.OrganizationId = currentUser.OrganizationId;
+            detailingOrder.Prepayment = 0;
             await detailingRepository.AddAsync(detailingOrder);
             return true;
         }
 
-        public async Task DeleteDetailingOrderAsync(int id)
+        public async Task<bool> DeleteUpdateDetailingOrderAsync(DetailingOrder detailingOrder)
         {
-            await detailingRepository.DeleteAsync(id);
+            var allDetailingServices = await detailingServiceRepository.GetAllServicesByDetailingOrderIdAsync(detailingOrder.Id);
+            foreach (var item in allDetailingServices)
+            {
+                item.IsDeleted = true;
+                await detailingServiceRepository.UpdateAsync(item);
+            }
+            detailingOrder.IsDeleted = true;
+            await detailingRepository.CompleteUpdateAsync(detailingOrder);
+            return true;
         }
 
         public async Task<IEnumerable<DetailingOrder>> GetAllDetailingOrdersFilterAsync(string? aspNetUserId, int? organizationId)
         {
             return await detailingRepository.GetAllFilterAsync(aspNetUserId, organizationId);
         }
+
+
+        public async Task<IEnumerable<DetailingOrder>> GetAllOrdersNotCompletedFilterAsync(string? aspNetUserId, int? organizationId)
+        {
+            return await detailingRepository.GetAllFilterAsync(aspNetUserId, organizationId);
+        }
+
 
         public async Task<DetailingOrder> GetDetailingOrderByIdAsync(int id)
         {

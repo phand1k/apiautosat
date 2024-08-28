@@ -19,7 +19,7 @@ namespace AvtoMigBussines.Authenticate
         [Required]
         [StringLength(100, ErrorMessage = " Поле должно содержать в себе 12 символов", MinimumLength = 2)]
         public string? FullName { get; set; }
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
         public bool? IsDeleted { get; set; } = false;
         [JsonIgnore]
         public ICollection<AspNetUser>? AspNetUsers { get; set; }

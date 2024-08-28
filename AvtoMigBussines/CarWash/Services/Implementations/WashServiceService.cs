@@ -46,7 +46,8 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
                 OrganizationId = user.OrganizationId,
                 AspNetUserId = aspNetUserId,
                 WhomAspNetUserId = washServiceDTO.WhomAspNetUserId,
-                Salary = washServiceDTO.Salary
+                Salary = washServiceDTO.Salary,
+                CreatedAspNetUserId = washServiceDTO.CreatedAspNetUserId
             };
 
             await _washServiceRepository.AddAsync(washService);

@@ -16,7 +16,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Interfaces
         Task<IEnumerable<WashOrder>> GetAllFilterAsync(string? aspNetUserId, int? organizationId);
         Task CompleteUpdateAsync(WashOrder carWashOrder);
         Task<IEnumerable<WashOrder>> GetAllNotCompletedFilterAsync(string? aspNetUserId, int? organizationId);
-        Task<IEnumerable<WashOrder>> GettAllCompletedFilterAsync(string? aspNetUserId, int? organizationId);
+        Task<IEnumerable<WashOrder>> GettAllCompletedFilterAsync(string? aspNetUserId, int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd);
         Task<int?> GetAllNotCompletedCountFilterAsync(string? aspNetUserId, int? organizationId);
         Task ReturnAsync(int id);
     }

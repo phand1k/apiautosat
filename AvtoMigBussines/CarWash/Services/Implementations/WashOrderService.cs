@@ -86,13 +86,19 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             await _washOrderRepository.CompleteUpdateAsync(washOrder);
             return true;
         }
+        public async Task<bool> ReadyUpdateWashOrderAsync(WashOrder washOrder)
+        {
+            washOrder.IsReady = true;
+            await _washOrderRepository.UpdateAsync(washOrder);
+            return true;
+        }
         public async Task<bool> CompleteUpdateWashOrderAsync(WashOrder washOrder, string whoIs)
         {
             var notCompletedServices = await washServiceRepository.GetAllServicesByWashOrderIdAsync(washOrder.Id);
             var timeZone = DateTimeZoneProviders.Tzdb["Asia/Almaty"];
             var now = SystemClock.Instance.GetCurrentInstant();
             bool hasUpdated = false;
-
+            washOrder.EndOfOrderAspNetUserId = whoIs;
             foreach (var item in notCompletedServices)
             {
                 if (item.IsOvered == false)
@@ -109,7 +115,6 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             {
                 washOrder.DateOfCompleteService = now.InZone(timeZone).ToDateTimeUnspecified();
                 washOrder.IsOvered = true;
-                washOrder.EndOfOrderAspNetUserId = whoIs;
                 await _washOrderRepository.CompleteUpdateAsync(washOrder);
                 return true;
             }
@@ -123,9 +128,9 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             return await _washOrderRepository.GetAllNotCompletedFilterAsync(aspNetUserId, organizationId);
         }
 
-        public async Task<IEnumerable<WashOrder>> GettAllCompletedWashOrdersFilterAsync(string? aspNetUserId, int? organizationId)
+        public async Task<IEnumerable<WashOrder>> GettAllCompletedWashOrdersFilterAsync(string? aspNetUserId, int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd)
         {
-            return await _washOrderRepository.GettAllCompletedFilterAsync(aspNetUserId, organizationId);
+            return await _washOrderRepository.GettAllCompletedFilterAsync(aspNetUserId, organizationId, dateOfStart, dateOfEnd);
         }
 
         public async Task<int?> GetCountOfNotCompletedWashOrdersAsync(string? aspNetUserId, int? organizationId)

@@ -13,7 +13,7 @@ namespace AvtoMigBussines.Models
         [ForeignKey("OrganizationId")]
         public int? OrganizationId { get; set; }
         public bool? IsDeleted { get; set; } = false;
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
         public NotificationCenter() 
         {
             var timeZone = DateTimeZoneProviders.Tzdb["Asia/Almaty"];

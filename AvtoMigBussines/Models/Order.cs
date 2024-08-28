@@ -6,7 +6,7 @@ namespace AvtoMigBussines.Models
     public abstract class Order
     {
         public int Id { get; set; }
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
         public int? CarId { get; set; }
         public Car? Car { get; set; }
         public int? ModelCarId { get; set; }
@@ -14,7 +14,8 @@ namespace AvtoMigBussines.Models
         public bool? IsDeleted { get; set; } = false;
         public bool? IsReturn { get; set; } = false;
         public bool? IsOvered { get; set; } = false;
-        public DateTime? DateOfCompleteService { get; set; } = DateTime.Now;
+        public DateTime? DateOfCompleteService { get; set; } = DateTime.UtcNow;
+        public bool? IsReady { get; set; } = false;
         public string? PhoneNumber { get; set; }
         public Order()
         {

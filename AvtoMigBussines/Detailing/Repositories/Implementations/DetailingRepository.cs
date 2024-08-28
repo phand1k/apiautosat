@@ -1,4 +1,5 @@
-﻿using AvtoMigBussines.Data;
+﻿using AvtoMigBussines.CarWash.Models;
+using AvtoMigBussines.Data;
 using AvtoMigBussines.Detailing.Models;
 using AvtoMigBussines.Detailing.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,11 @@ namespace AvtoMigBussines.Detailing.Repositories.Implementations
         public DetailingRepository(ApplicationDbContext context)
         {
             this.context = context;
+        }
+        public async Task CompleteUpdateAsync(DetailingOrder detailingOrder)
+        {
+            context.DetailingOrders.Update(detailingOrder);
+            await context.SaveChangesAsync();
         }
         public async Task AddAsync(DetailingOrder detailingOrder)
         {
@@ -36,21 +42,30 @@ namespace AvtoMigBussines.Detailing.Repositories.Implementations
         public async Task<IEnumerable<DetailingOrder>> GetAllFilterAsync(string? aspNetUserId, int? organizationId)
         {
             return await context.DetailingOrders
-                 .Include(x => x.ModelCar.Car)
+                 .Include(x => x.ModelCar.Car).Where(x=>x.IsDeleted == false)
                  .Where(x => x.AspNetUserId == aspNetUserId && x.OrganizationId == organizationId)
                  .OrderByDescending(x => x.DateOfCreated)
                  .Take(5)
                  .ToListAsync();
         }
 
-        public async Task<DetailingOrder> GetByIdAsync(int id)
+        public async Task<IEnumerable<DetailingOrder>> GetAllNotCompeltedOrders(string? aspNetUserId, int? organizationId)
         {
-            return await context.DetailingOrders.Include(x => x.ModelCar.Car).Include(x => x.AspNetUser).FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+            return await context.DetailingOrders.
+                Include(x => x.ModelCar.Car).Where(x=>x.IsDeleted == false).
+                Where(x=>x.OrganizationId == organizationId && x.IsOvered == false).
+                OrderByDescending(x => x.DateOfCreated).ToListAsync();
         }
 
-        public Task UpdateAsync(DetailingOrder detailingOrder)
+        public async Task<DetailingOrder> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await context.DetailingOrders.
+                Include(x => x.ModelCar.Car).Include(x => x.AspNetUser).FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
+        }
+        public async Task UpdateAsync(DetailingOrder detailingOrder)
+        {
+            context.DetailingOrders.Update(detailingOrder);
+            await context.SaveChangesAsync();
         }
     }
 }

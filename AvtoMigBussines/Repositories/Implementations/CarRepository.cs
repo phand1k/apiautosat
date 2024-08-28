@@ -19,7 +19,7 @@ namespace AvtoMigBussines.Repositories.Implementations
 
         public async Task<IEnumerable<Car>> GetAllAsync()
         {
-            return await _context.Cars.Where(p => p.IsDeleted == false).ToListAsync();
+            return await _context.Cars.Where(p => p.IsDeleted == false).OrderBy(x=>x.Name).ToListAsync();
         }
 
         public async Task AddAsync(Car product)

@@ -5,6 +5,7 @@ using AvtoMigBussines.CarWash.Services.Interfaces;
 using AvtoMigBussines.Data;
 using AvtoMigBussines.DTOModels;
 using AvtoMigBussines.Exceptions;
+using AvtoMigBussines.Services.Implementations;
 using AvtoMigBussines.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
@@ -38,6 +40,7 @@ namespace AvtoMigBussines.CarWash.Controllers
         private readonly ISalarySettingService salarySettingService;
         private readonly IWashOrderTransactionService washOrderTransactionService;
         private readonly INotificationCenterService notificationCenterService;
+        private readonly IClientService _clientService;
         public WashOrderController(
             IWashOrderService washOrderService,
             WebSocketHandler webSocketHandler,
@@ -49,7 +52,8 @@ namespace AvtoMigBussines.CarWash.Controllers
             IWashServiceService washService,
             ISalarySettingService salarySettingService,
             IWashOrderTransactionService washOrderTransactionService,
-            INotificationCenterService notificationCenterService)
+            INotificationCenterService notificationCenterService,
+            IClientService clientService)
         {
             _washOrderService = washOrderService;
             _webSocketHandler = webSocketHandler;
@@ -62,6 +66,7 @@ namespace AvtoMigBussines.CarWash.Controllers
             this.salarySettingService = salarySettingService;
             this.washOrderTransactionService = washOrderTransactionService;
             this.notificationCenterService = notificationCenterService;
+            _clientService = clientService;
         }
         //Actions with push notification, get current user etc
         //Действия с получением текущего пользователя, отправка уведомлений и т.д.
@@ -186,14 +191,6 @@ namespace AvtoMigBussines.CarWash.Controllers
         }
 
 
-
-
-
-
-
-
-
-
         //Actions with Order
         //Действия с заказ-нарядами
         [HttpPatch("ReturnOrder")]
@@ -237,7 +234,6 @@ namespace AvtoMigBussines.CarWash.Controllers
             washOrderDashboardDTO.SummOfAllServices = await _washService.GetSummOfServicesOnNotCompletedWashOrders(user.OrganizationId);
             return Ok(washOrderDashboardDTO);
         }
-
         [HttpGet("GetSummOfWashServicesOnOrder")]
         public async Task<IActionResult> GetSummOfWashServicesOnOrder(int? id)
         {
@@ -251,16 +247,72 @@ namespace AvtoMigBussines.CarWash.Controllers
         }
 
         [HttpGet("AllCompletedWashOrdersAsync")]
-        public async Task<IActionResult> AllCompletedWashOrders()
+        public async Task<IActionResult> AllCompletedWashOrders(DateTime? dateOfStart, DateTime? dateOfEnd)
         {
             var user = await GetCurrentUserAsync();
             if (user == null)
             {
                 return Unauthorized(new { Message = "User is not authenticated." });
             }
-            var result = await _washOrderService.GettAllCompletedWashOrdersFilterAsync(user.Id, user.OrganizationId);
-            return Ok(result);
+
+            // Если даты не переданы, то использовать текущий день с 05:00 до 23:59
+            if (!dateOfStart.HasValue && !dateOfEnd.HasValue)
+            {
+                DateTime today = DateTime.Today;
+                dateOfStart = today.AddHours(5);  // Сегодня в 05:00
+                dateOfEnd = today.AddHours(23).AddMinutes(59).AddSeconds(59);  // Сегодня в 23:59:59
+            }
+
+            var result = await _washOrderService.GettAllCompletedWashOrdersFilterAsync(user.Id, user.OrganizationId, dateOfStart, dateOfEnd);
+
+            var response = result.Select(order => new
+            {
+                order.CarNumber,
+                order.AspNetUserId,
+                AspNetUser = new
+                {
+                    order.AspNetUser?.FirstName,
+                    order.AspNetUser?.LastName,
+                    order.AspNetUser?.PhoneNumber
+                },
+                order.OrganizationId,
+                Organization = new
+                {
+                    order.Organization?.Name,
+                    order.Organization?.FullName
+                },
+                order.EndOfOrderAspNetUserId,
+                EndOfOrderAspNetUser = new
+                {
+                    order.EndOfOrderAspNetUser?.FirstName,
+                    order.EndOfOrderAspNetUser?.LastName,
+                    order.EndOfOrderAspNetUser?.PhoneNumber
+                },
+                order.CreatedByFullName,
+                order.EndedByFullName,
+                order.Id,
+                order.DateOfCreated,
+                order.CarId,
+                Car = new
+                {
+                    order.Car?.Name
+                },
+                order.ModelCarId,
+                ModelCar = new
+                {
+                    order.ModelCar?.Name
+                },
+                order.IsDeleted,
+                order.IsReturn,
+                order.IsOvered,
+                order.DateOfCompleteService,
+                order.PhoneNumber
+            });
+
+            return Ok(response);
         }
+
+
 
         [HttpGet("AllNotCompletedWashOrdersAsync")]
         public async Task<IActionResult> AllNotCompletedWashOrdersAsync()
@@ -293,7 +345,6 @@ namespace AvtoMigBussines.CarWash.Controllers
             {
                 return BadRequest("WashOrder ID is required");
             }
-            var user = await GetCurrentUserAsync();
             var washOrder = await _washOrderService.GetByIdWashOrderForComplete(id.Value);
             if (washOrder == null)
             {
@@ -302,6 +353,43 @@ namespace AvtoMigBussines.CarWash.Controllers
             await _washOrderService.DeleteUpdateWashOrderAsync(washOrder);
             return Ok("Wash order success deleted");
         }
+        [HttpPatch("ReadyWashOrder")]
+        public async Task<IActionResult> ReadyWashOrder(int? id)
+        {
+            if (!id.HasValue)
+            {
+                return BadRequest("WashOrder ID is required");
+            }
+
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+
+            var washOrder = await _washOrderService.GetByIdWashOrderForComplete(id.Value);
+            if (washOrder == null)
+            {
+                return NotFound("WashOrder not found");
+            }
+
+            await _washOrderService.ReadyUpdateWashOrderAsync(washOrder);
+
+            Console.WriteLine("ReadyUpdateWashOrderAsync выполнен успешно");
+
+            // Отправка уведомлений через Telegram
+            await _clientService.NotifyUsersAsync(washOrder.CarNumber);
+            Console.WriteLine($"NotifyUsersAsync вызван для номера машины: {washOrder.CarNumber}");
+            var tokens = await GetAllUserTokensAsync(user.OrganizationId);
+            foreach (var token in tokens)
+            {
+                await SendPushNotification(token, "Машина помыта✅", $"Гос номер: {washOrder.CarNumber}", $"Машина: {washOrder.Car.Name + " " + washOrder.ModelCar.Name}", new { extraData = "Любые дополнительные данные" });
+            }
+            await notificationCenterService.CreateNotificationAsync("Машина: " + washOrder.Car.Name + " " + washOrder.ModelCar.Name + ". \nГос номер: " + washOrder.CarNumber + ". \nНомер клиента: " + washOrder.PhoneNumber, user.Id, "Заказ-наряд завершен");
+
+            return StatusCode(200, "Wash order is ready");
+        }
+
         [HttpPatch("CompleteWashOrder")]
         public async Task<IActionResult> CompleteWashOrder(int? id)
         {

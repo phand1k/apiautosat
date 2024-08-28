@@ -14,7 +14,7 @@ namespace AvtoMigBussines.Models
         public string? AspNetUserId { get; set; }
         public AspNetUser? AspNetUser { get; set; }
         public bool? IsDeleted { get; set; } = false;
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
         [ForeignKey("OrganizationId")]
         public int? OrganizationId { get; set; }
         public Organization? Organization { get; set; }

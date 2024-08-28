@@ -6,7 +6,7 @@ namespace AvtoMigBussines.Models
     {
         public Guid Id { get; set; }
         public string? Token { get; set; }
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
         public bool? IsDeleted { get; set; } = false;
         [ForeignKey("AspNetUserId")]
         public string? AspNetUserId { get; set; }

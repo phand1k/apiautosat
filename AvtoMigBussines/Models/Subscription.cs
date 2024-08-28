@@ -9,8 +9,8 @@ namespace AvtoMigBussines.Models
         [ForeignKey("OrganizationId")]
         public int? OrganizationId { get; set; }
         public Organization Organization { get; set; }
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
-        public DateTime? DateOfStart { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
+        public DateTime? DateOfStart { get; set; } = DateTime.UtcNow;
         public DateTime? DateOfEnd { get; set; }
         public bool? IsDeleted { get; set; } = false;
         public bool? IsReturn { get; set; } = false;

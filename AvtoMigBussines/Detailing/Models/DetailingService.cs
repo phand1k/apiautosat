@@ -16,19 +16,19 @@ namespace AvtoMigBussines.Detailing.Models
         [ForeignKey("AspNetUserId")]
         public string? AspNetUserId { get; set; }
         public AspNetUser? AspNetUser { get; set; }
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
         public bool? IsDeleted { get; set; } = false;
         public bool? IsOvered { get; set; } = false;
-        [ForeignKey("WashOrderId")]
-        public int? WashOrderId { get; set; }
-        public WashOrder? WashOrder { get; set; }
+        [ForeignKey("DetailingOrderId")]
+        public int? DetailingOrderId { get; set; }
+        public DetailingOrder? DetailingOrder { get; set; }
         [ForeignKey("OrganizationId")]
         public int? OrganizationId { get; set; }
         public Organization? Organization { get; set; }
         [ForeignKey("WhomAspNetUserId")]
         public string? WhomAspNetUserId { get; set; }
         public double? Salary { get; set; }
-        public DateTime? DateOfCompleteService { get; set; } = DateTime.Now;
+        public DateTime? DateOfCompleteService { get; set; } = DateTime.UtcNow;
         public string? Comment { get; set; }
         public DetailingService()
         {

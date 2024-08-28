@@ -14,7 +14,7 @@ namespace AvtoMigBussines.CarWash.Models
         [ForeignKey("AspNetUserId")]
         public string? AspNetUserId { get; set; }
         public AspNetUser? AspNetUser { get; set; }
-        public DateTime? DateOfCreated { get; set; } = DateTime.Now;
+        public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
         public double? Summ { get; set; }
         public double? ToPay { get; set; }
         public bool? IsDeleted { get; set; } = false;

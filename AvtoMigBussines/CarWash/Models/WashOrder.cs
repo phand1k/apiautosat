@@ -24,10 +24,10 @@ namespace AvtoMigBussines.CarWash.Models
 
         // Дополнительные свойства для хранения ФИО
         [NotMapped]
-        public string? CreatedByFullName => AspNetUser != null ? $"{AspNetUser.FirstName} {AspNetUser.LastName}" : null;
+        public string? CreatedByFullName => AspNetUser != null ? $"{AspNetUser.FirstName} {AspNetUser.LastName} {AspNetUser.PhoneNumber}" : null;
 
         [NotMapped]
-        public string? EndedByFullName => EndOfOrderAspNetUser != null ? $"{EndOfOrderAspNetUser.FirstName} {EndOfOrderAspNetUser.LastName}" : null;
+        public string? EndedByFullName => EndOfOrderAspNetUser != null ? $"{EndOfOrderAspNetUser.FirstName} {EndOfOrderAspNetUser.LastName} {EndOfOrderAspNetUser.PhoneNumber}" : null;
     }
 
 }

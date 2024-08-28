@@ -27,6 +27,19 @@ namespace AvtoMigBussines.Controllers
             this.userService = userService;
             this.typeOfOrganizationService = typeOfOrganizationService;
         }
+        [HttpGet("GetTypeOfOrganization")]
+        [Authorize]
+        public async Task<IActionResult> GetTypeOfOrganization()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            string typeOfOrganization = await typeOfOrganizationService.GetTypeOrganizationIdAsync(user.OrganizationId);
+            return Ok(typeOfOrganization);
+
+        }
         [HttpGet("TypeOfOrganizationsList")]
         public async Task<IActionResult> TypeOfOrganizationsList()
         {
