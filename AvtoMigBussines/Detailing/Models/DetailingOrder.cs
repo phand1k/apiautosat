@@ -20,8 +20,14 @@ namespace AvtoMigBussines.Detailing.Models
         public Organization? Organization { get; set; }
         [ForeignKey("EndOfOrderAspNetUserId")]
         public string? EndOfOrderAspNetUserId { get; set; }
+        public AspNetUser? EndOfOrderAspNetUser { get; set; }
         public string? Comment { get; set; }
         public double? Prepayment { get; set; }
+        [NotMapped]
+        public string? CreatedByFullName => AspNetUser != null ? $"{AspNetUser.FirstName} {AspNetUser.LastName} {AspNetUser.PhoneNumber}" : null;
+
+        [NotMapped]
+        public string? EndedByFullName => EndOfOrderAspNetUser != null ? $"{EndOfOrderAspNetUser.FirstName} {EndOfOrderAspNetUser.LastName} {EndOfOrderAspNetUser.PhoneNumber}" : null;
 
     }
 }

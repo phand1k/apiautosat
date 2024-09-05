@@ -2,6 +2,8 @@
 using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Services.Interfaces;
 using AvtoMigBussines.Data;
+using AvtoMigBussines.Detailing.Models;
+using AvtoMigBussines.Detailing.Services.Interfaces;
 using AvtoMigBussines.Exceptions;
 using AvtoMigBussines.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -29,6 +31,7 @@ namespace AvtoMigBussines.Controllers
         private readonly ISalarySettingService salarySettingService;
         private readonly IWashOrderTransactionService washOrderTransactionService;
         private readonly INotificationCenterService notificationCenterService;
+        private readonly IDetailingOrderService detailingOrderService;
         public TransactionController(
             IWashOrderService washOrderService,
             WebSocketHandler webSocketHandler,
@@ -40,8 +43,9 @@ namespace AvtoMigBussines.Controllers
             IWashServiceService washService,
             ISalarySettingService salarySettingService,
             IWashOrderTransactionService washOrderTransactionService,
-            INotificationCenterService notificationCenterService)
+            INotificationCenterService notificationCenterService, IDetailingOrderService detailingOrderService)
         {
+            this.detailingOrderService = detailingOrderService;
             _washOrderService = washOrderService;
             _webSocketHandler = webSocketHandler;
             _userService = userService;
@@ -121,6 +125,44 @@ namespace AvtoMigBussines.Controllers
                 return StatusCode(500, new { Message = "An error occurred while processing your request." });
             }
         }
+        [HttpPost("CreateDetailingTransaction")]
+        public async Task<IActionResult> CreateDetailingTransaction([FromBody] DetailingOrderTransaction transaction, int detailingOrderId)
+        {
+            var detailingOrder = await detailingOrderService.GetByIdDetailingOrderForComplete(detailingOrderId);
+            if (detailingOrder == null)
+            {
+                return NotFound(new { Message = "Detailing order not found." });
+            }
+            if (detailingOrderId == null)
+            {
+                return BadRequest(new { Message = "Detailing order ID is required." });
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+            try
+            {
+                await washOrderTransactionService.CreateDetailingOrderTransactionAsync(transaction, user.Id, detailingOrderId);
+                return Ok(transaction);
+            }
+            catch (CustomException.WashOrderNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Логирование исключения
+                // _logger.LogError(ex, "An error occurred while creating the wash service.");
+                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+            }
+        }
+
         [HttpPost("CreateWashOrderTransactionAsync")]
         public async Task<IActionResult> CreateWashOrderTransactionAsync([FromBody] WashOrderTransaction transaction, int washOrderId)
         {
@@ -158,7 +200,25 @@ namespace AvtoMigBussines.Controllers
                 return StatusCode(500, new { Message = "An error occurred while processing your request." });
             }
         }
+        [HttpGet("GetAllDetailingOrderTransactions")]
+        public async Task<IActionResult> GetAllDetailingOrderTransactions(DateTime? dateOfStart, DateTime? dateOfEnd)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
 
+            if (!dateOfStart.HasValue && !dateOfEnd.HasValue)
+            {
+                DateTime today = DateTime.Today;
+                dateOfStart = today.AddHours(5);  // Сегодня в 05:00
+                dateOfEnd = today.AddHours(23).AddMinutes(59).AddSeconds(59);  // Сегодня в 23:59:59
+            }
+
+            var transactions = await washOrderTransactionService.GetAllDetailingOrderTransactions(user.Id, dateOfStart, dateOfEnd);
+            return Ok(transactions);
+        }
         [HttpGet("GetAllTransactions")]
         public async Task<IActionResult> GetAllTransactions(DateTime? dateOfStart, DateTime? dateOfEnd)
         {
@@ -167,6 +227,7 @@ namespace AvtoMigBussines.Controllers
             {
                 return Unauthorized(new { Message = "User is not authenticated." });
             }
+
             if (!dateOfStart.HasValue && !dateOfEnd.HasValue)
             {
                 DateTime today = DateTime.Today;

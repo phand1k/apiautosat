@@ -1,6 +1,7 @@
 ﻿using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Repositories.Interfaces;
 using AvtoMigBussines.Data;
+using AvtoMigBussines.Detailing.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AvtoMigBussines.CarWash.Repositories.Implementations
@@ -11,6 +12,11 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         public WashOrderTransactionRepository(ApplicationDbContext context)
         {
             this.context = context;
+        }
+        public async Task AddDetailingOrderTransactionAsync(DetailingOrderTransaction detailingOrderTransaction)
+        {
+            context.DetailingOrderTransactions.Add(detailingOrderTransaction);
+            await context.SaveChangesAsync();
         }
         public async Task AddAsync(WashOrderTransaction washOrderTransaction)
         {
@@ -53,6 +59,23 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         public Task UpdateAsync(WashOrderTransaction washOrderTransaction)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<DetailingOrderTransaction>> GetAllDetailingOrderTransactions(int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd)
+        {
+            // Начальная загрузка данных с необходимыми связями
+            var query = context.DetailingOrderTransactions
+                .Include(x => x.PaymentMethod)
+                .Include(x => x.Organization)
+                .Where(x => x.OrganizationId == organizationId && x.IsDeleted == false);
+
+            // Проверка наличия дат и фильтрация на их основе
+            if (dateOfStart != null && dateOfEnd != null)
+            {
+                query = query.Where(x => x.DateOfCreated >= dateOfStart && x.DateOfCreated <= dateOfEnd);
+            }
+
+            return await query.ToListAsync();
         }
     }
 }

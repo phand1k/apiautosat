@@ -7,6 +7,7 @@ using AvtoMigBussines.Detailing.Repositories.Interfaces;
 using AvtoMigBussines.Detailing.Services.Interfaces;
 using AvtoMigBussines.Exceptions;
 using Microsoft.AspNetCore.Identity;
+using NodaTime;
 
 namespace AvtoMigBussines.Detailing.Services.Implementations
 {
@@ -20,6 +21,10 @@ namespace AvtoMigBussines.Detailing.Services.Implementations
             this.detailingRepository = detailingRepository;
             this.userManager = userManager;
             this.detailingServiceRepository = detailingServiceRepository;
+        }
+        public async Task<IEnumerable<DetailingOrder>> GettAllCompletedDetailingOrdersFilterAsync(string? aspNetUserId, int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd)
+        {
+            return await detailingRepository.GettAllCompletedFilterAsync(aspNetUserId, organizationId, dateOfStart, dateOfEnd);
         }
         public async Task<bool> CreateDetailingOrderAsync(DetailingOrder detailingOrder, string aspNetUserId)
         {
@@ -37,7 +42,39 @@ namespace AvtoMigBussines.Detailing.Services.Implementations
             await detailingRepository.AddAsync(detailingOrder);
             return true;
         }
+        public async Task<bool> CompleteUpdateDetailingOrderAsync(DetailingOrder detailingOrder, string whoIs)
+        {
+            var notCompletedServices = await detailingServiceRepository.GetAllServicesByDetailingOrderIdAsync(detailingOrder.Id);
+            var timeZone = DateTimeZoneProviders.Tzdb["Asia/Almaty"];
+            var now = SystemClock.Instance.GetCurrentInstant();
+            bool hasUpdated = false;
+            detailingOrder.EndOfOrderAspNetUserId = whoIs;
+            foreach (var item in notCompletedServices)
+            {
+                if (item.IsOvered == false)
+                {
+                    item.IsOvered = true;
+                    item.DateOfCompleteService = now.InZone(timeZone).ToDateTimeUnspecified();
+                    await detailingServiceRepository.UpdateAsync(item);
+                    hasUpdated = true;
+                }
+            }
 
+            // Если были обновлены услуги или все услуги уже завершены, завершить заказ наряд
+            if (hasUpdated || notCompletedServices.All(s => s.IsOvered == true))
+            {
+                detailingOrder.DateOfCompleteService = now.InZone(timeZone).ToDateTimeUnspecified();
+                detailingOrder.IsOvered = true;
+                await detailingRepository.CompleteUpdateAsync(detailingOrder);
+                return true;
+            }
+
+            return false;
+        }
+        public async Task<DetailingOrder> GetByIdDetailingOrderForComplete(int id)
+        {
+            return await detailingRepository.GetByIdForCompleteAsync(id);
+        }
         public async Task<bool> DeleteUpdateDetailingOrderAsync(DetailingOrder detailingOrder)
         {
             var allDetailingServices = await detailingServiceRepository.GetAllServicesByDetailingOrderIdAsync(detailingOrder.Id);

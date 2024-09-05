@@ -3,6 +3,7 @@ using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Repositories.Implementations;
 using AvtoMigBussines.CarWash.Repositories.Interfaces;
 using AvtoMigBussines.CarWash.Services.Interfaces;
+using AvtoMigBussines.Detailing.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace AvtoMigBussines.CarWash.Services.Implementations
@@ -23,6 +24,17 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             var user = await userManager.FindByIdAsync(aspNetUserId);
             return await washOrderTransactionRepository.GetAllTransactions(user.OrganizationId, dateOfStart, dateOfEnd);
         }
+        public async Task<bool> CreateDetailingOrderTransactionAsync(DetailingOrderTransaction detailingOrderTransaction, string aspNetUserId, int detailingOrderId)
+        {
+            var user = await userManager.FindByIdAsync(aspNetUserId);
+            detailingOrderTransaction.AspNetUserId = aspNetUserId;
+            detailingOrderTransaction.OrganizationId = user.OrganizationId;
+            detailingOrderTransaction.DetailingOrderId = detailingOrderId;
+            detailingOrderTransaction.ToPay = await _washService.GetSummAllServices(detailingOrderId);
+            await washOrderTransactionRepository.AddDetailingOrderTransactionAsync(detailingOrderTransaction);
+            return true;
+        }
+
         public async Task<bool> CreateWashOrderTransactionAsync(WashOrderTransaction washOrderTransaction, string aspNetUserId, int washOrderId)
         {
             var user = await userManager.FindByIdAsync(aspNetUserId);
@@ -37,6 +49,12 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
         public async Task<WashOrderTransaction> GetWashOrderTransactionByIdAsync(int id)
         {
             return await washOrderTransactionRepository.GetByIdAsync(id);
+        }
+
+        public async Task<IEnumerable<DetailingOrderTransaction>> GetAllDetailingOrderTransactions(string? aspNetUserId, DateTime? dateOfStart, DateTime? dateOfEnd)
+        {
+            var user = await userManager.FindByIdAsync(aspNetUserId);
+            return await washOrderTransactionRepository.GetAllDetailingOrderTransactions(user.OrganizationId, dateOfStart, dateOfEnd);
         }
     }
 }

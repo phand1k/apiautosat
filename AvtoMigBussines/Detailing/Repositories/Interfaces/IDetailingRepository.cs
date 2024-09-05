@@ -14,5 +14,7 @@ namespace AvtoMigBussines.Detailing.Repositories.Interfaces
 
         Task<IEnumerable<DetailingOrder>> GetAllNotCompeltedOrders(string? aspNetUserId, int? organizationId);
         Task CompleteUpdateAsync(DetailingOrder detailingOrder);
+        Task<DetailingOrder> GetByIdForCompleteAsync(int id);
+        Task<IEnumerable<DetailingOrder>> GettAllCompletedFilterAsync(string? aspNetUserId, int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd);
     }
 }

@@ -350,8 +350,6 @@ namespace AvtoMigBussines.Migrations
                     AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrganizationId = table.Column<int>(type: "int", nullable: true),
                     EndOfOrderAspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MileAge = table.Column<double>(type: "float", nullable: true),
-                    ClientFullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Prepayment = table.Column<double>(type: "float", nullable: true),
                     DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -463,6 +461,46 @@ namespace AvtoMigBussines.Migrations
                         name: "FK_WashOrders_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DetailingOrderTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PaymentMethodId = table.Column<int>(type: "int", nullable: true),
+                    AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Summ = table.Column<double>(type: "float", nullable: true),
+                    ToPay = table.Column<double>(type: "float", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: true),
+                    OrganizationId = table.Column<int>(type: "int", nullable: true),
+                    DetailingOrderId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DetailingOrderTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DetailingOrderTransactions_AspNetUsers_AspNetUserId",
+                        column: x => x.AspNetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DetailingOrderTransactions_DetailingOrders_DetailingOrderId",
+                        column: x => x.DetailingOrderId,
+                        principalTable: "DetailingOrders",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DetailingOrderTransactions_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DetailingOrderTransactions_PaymentMethods_PaymentMethodId",
+                        column: x => x.PaymentMethodId,
+                        principalTable: "PaymentMethods",
                         principalColumn: "Id");
                 });
 
@@ -736,6 +774,26 @@ namespace AvtoMigBussines.Migrations
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrderTransactions_AspNetUserId",
+                table: "DetailingOrderTransactions",
+                column: "AspNetUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrderTransactions_DetailingOrderId",
+                table: "DetailingOrderTransactions",
+                column: "DetailingOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrderTransactions_OrganizationId",
+                table: "DetailingOrderTransactions",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrderTransactions_PaymentMethodId",
+                table: "DetailingOrderTransactions",
+                column: "PaymentMethodId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DetailingPriceLists_AspNetUserId",
                 table: "DetailingPriceLists",
                 column: "AspNetUserId");
@@ -905,6 +963,9 @@ namespace AvtoMigBussines.Migrations
 
             migrationBuilder.DropTable(
                 name: "Clients");
+
+            migrationBuilder.DropTable(
+                name: "DetailingOrderTransactions");
 
             migrationBuilder.DropTable(
                 name: "DetailingPriceLists");

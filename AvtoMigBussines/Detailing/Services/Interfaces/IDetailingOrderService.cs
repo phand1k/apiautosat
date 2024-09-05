@@ -10,6 +10,8 @@ namespace AvtoMigBussines.Detailing.Services.Interfaces
         Task<IEnumerable<DetailingOrder>> GetAllOrdersNotCompletedFilterAsync(string? aspNetUserId, int? organizationId);
         Task<bool> CreateDetailingOrderAsync(DetailingOrder detailingOrder, string aspNetUserId);
         Task<bool> DeleteUpdateDetailingOrderAsync(DetailingOrder detailingOrder);
-
+        Task<DetailingOrder> GetByIdDetailingOrderForComplete(int id);
+        Task<bool> CompleteUpdateDetailingOrderAsync(DetailingOrder detailingOrder, string? whoIsEnd);
+        Task<IEnumerable<DetailingOrder>> GettAllCompletedDetailingOrdersFilterAsync(string? aspNetUserId, int? organizationId, DateTime? dateOfStart, DateTime? dateOfEnd);
     }
 }

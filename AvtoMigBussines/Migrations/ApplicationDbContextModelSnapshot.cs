@@ -359,9 +359,6 @@ namespace AvtoMigBussines.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ClientFullName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Comment")
                         .HasColumnType("nvarchar(max)");
 
@@ -386,9 +383,6 @@ namespace AvtoMigBussines.Migrations
                     b.Property<bool?>("IsReturn")
                         .HasColumnType("bit");
 
-                    b.Property<double?>("MileAge")
-                        .HasColumnType("float");
-
                     b.Property<int?>("ModelCarId")
                         .HasColumnType("int");
 
@@ -412,6 +406,51 @@ namespace AvtoMigBussines.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("DetailingOrders");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingOrderTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("AspNetUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DetailingOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OrganizationId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PaymentMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Summ")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("ToPay")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AspNetUserId");
+
+                    b.HasIndex("DetailingOrderId");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.ToTable("DetailingOrderTransactions");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingPriceList", b =>
@@ -1060,6 +1099,33 @@ namespace AvtoMigBussines.Migrations
                     b.Navigation("ModelCar");
 
                     b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingOrderTransaction", b =>
+                {
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "AspNetUser")
+                        .WithMany()
+                        .HasForeignKey("AspNetUserId");
+
+                    b.HasOne("AvtoMigBussines.Detailing.Models.DetailingOrder", "DetailingOrder")
+                        .WithMany()
+                        .HasForeignKey("DetailingOrderId");
+
+                    b.HasOne("AvtoMigBussines.Authenticate.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId");
+
+                    b.HasOne("AvtoMigBussines.Models.PaymentMethod", "PaymentMethod")
+                        .WithMany()
+                        .HasForeignKey("PaymentMethodId");
+
+                    b.Navigation("AspNetUser");
+
+                    b.Navigation("DetailingOrder");
+
+                    b.Navigation("Organization");
+
+                    b.Navigation("PaymentMethod");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Detailing.Models.DetailingPriceList", b =>

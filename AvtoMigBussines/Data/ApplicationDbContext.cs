@@ -14,6 +14,7 @@ namespace AvtoMigBussines.Data
         {
 
         }
+        public DbSet<DetailingOrderTransaction> DetailingOrderTransactions { get; set; }
         public DbSet<DetailingService> DetailingServices { get; set; }
         public DbSet<DetailingPriceList> DetailingPriceLists { get; set; }
         public DbSet<Client> Clients { get; set; }
