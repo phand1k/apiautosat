@@ -32,9 +32,9 @@ namespace AvtoMigBussines.Services.Implementations
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<NotificationCenter>> GetAllNotificationsAsync()
+        public async Task<IEnumerable<NotificationCenter>> GetAllNotificationsAsync(int? organizationId)
         {
-            return await notificationCenterRepository.GetAllAsync();
+            return await notificationCenterRepository.GetAllAsync(organizationId);
         }
 
         public Task<NotificationCenter> GetNotificationByIdAsync(int id)

@@ -6,6 +6,7 @@ namespace AvtoMigBussines.CarWash.Repositories.Interfaces
     public interface IWashOrderTransactionRepository
     {
         Task<WashOrderTransaction> GetByIdAsync(int id);
+        Task<DetailingOrderTransaction> GetDetailingOrderTransactionById(int id);
         Task<IEnumerable<WashOrderTransaction>> GetAllAsync(int? organizationId);
         Task AddAsync(WashOrderTransaction washOrderTransaction);
         Task AddDetailingOrderTransactionAsync(DetailingOrderTransaction detailingOrderTransaction);

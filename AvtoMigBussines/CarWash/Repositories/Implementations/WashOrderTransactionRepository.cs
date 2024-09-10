@@ -55,7 +55,10 @@ namespace AvtoMigBussines.CarWash.Repositories.Implementations
         {
             return await context.WashOrderTransactions.Include(x=>x.WashOrder.ModelCar.Car).Include(x=>x.AspNetUser).Include(x=>x.PaymentMethod).FirstOrDefaultAsync(x => x.WashOrderId == id);
         }
-
+        public async Task<DetailingOrderTransaction> GetDetailingOrderTransactionById(int id)
+        {
+            return await context.DetailingOrderTransactions.Include(x => x.DetailingOrder.ModelCar.Car).Include(x => x.AspNetUser).Include(x => x.PaymentMethod).FirstOrDefaultAsync(x => x.DetailingOrderId == id);
+        }
         public Task UpdateAsync(WashOrderTransaction washOrderTransaction)
         {
             throw new NotImplementedException();

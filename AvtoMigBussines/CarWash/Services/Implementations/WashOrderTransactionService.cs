@@ -30,7 +30,6 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
             detailingOrderTransaction.AspNetUserId = aspNetUserId;
             detailingOrderTransaction.OrganizationId = user.OrganizationId;
             detailingOrderTransaction.DetailingOrderId = detailingOrderId;
-            detailingOrderTransaction.ToPay = await _washService.GetSummAllServices(detailingOrderId);
             await washOrderTransactionRepository.AddDetailingOrderTransactionAsync(detailingOrderTransaction);
             return true;
         }
@@ -50,7 +49,10 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
         {
             return await washOrderTransactionRepository.GetByIdAsync(id);
         }
-
+        public async Task<DetailingOrderTransaction> GetDetailingOrderTransactionByIdAsync(int id)
+        {
+            return await washOrderTransactionRepository.GetDetailingOrderTransactionById(id);
+        }
         public async Task<IEnumerable<DetailingOrderTransaction>> GetAllDetailingOrderTransactions(string? aspNetUserId, DateTime? dateOfStart, DateTime? dateOfEnd)
         {
             var user = await userManager.FindByIdAsync(aspNetUserId);

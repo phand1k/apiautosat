@@ -28,9 +28,9 @@ namespace AvtoMigBussines.Repositories.Implementations
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<NotificationCenter>> GetAllAsync()
+        public async Task<IEnumerable<NotificationCenter>> GetAllAsync(int? organizationId)
         {
-            return await context.NotificationCenters.Where(p => p.IsDeleted == false).ToListAsync();
+            return await context.NotificationCenters.Where(p => p.IsDeleted == false && p.OrganizationId == organizationId).ToListAsync();
         }
 
         public async Task<NotificationCenter> GetByIdAsync(int id)

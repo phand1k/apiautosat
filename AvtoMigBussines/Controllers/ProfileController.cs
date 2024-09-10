@@ -52,7 +52,7 @@ namespace AvtoMigBussines.Controllers
         [HttpGet("Notifications")]
         public async Task<IActionResult> Notifications()
         {
-            var notificationData = await notificationCenterService.GetAllNotificationsAsync();
+            var notificationData = await notificationCenterService.GetAllNotificationsAsync(GetCurrentUserAsync().Result.OrganizationId);
             return Ok(notificationData);
         }
         [Route("GetProfileInfo")]

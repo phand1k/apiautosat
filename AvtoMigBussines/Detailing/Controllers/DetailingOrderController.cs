@@ -31,13 +31,15 @@ namespace AvtoMigBussines.Detailing.Controllers
         private readonly IDetailingServiceService _detailingService;
         private readonly ApplicationDbContext context;
         private readonly INotificationCenterService notificationCenterService;
-        public DetailingOrderController(UserManager<AspNetUser> userManager, IDetailingOrderService _detailingOrderService, IDetailingServiceService detailingService, ApplicationDbContext context , INotificationCenterService notificationCenterService)
+        private readonly IWashOrderTransactionService washOrderTransactionService;
+        public DetailingOrderController(UserManager<AspNetUser> userManager, IDetailingOrderService _detailingOrderService, IDetailingServiceService detailingService, ApplicationDbContext context , INotificationCenterService notificationCenterService, IWashOrderTransactionService washOrderTransactionService)
         {
             _userManager = userManager;
             this._detailingOrderService = _detailingOrderService;
             _detailingService = detailingService;
             this.context = context;
             this.notificationCenterService = notificationCenterService;
+            this.washOrderTransactionService = washOrderTransactionService;
         }
         private async Task<IEnumerable<string>> GetAllUserTokensAsync(int? organizationId)
         {
@@ -186,6 +188,7 @@ namespace AvtoMigBussines.Detailing.Controllers
             }
 
             bool hasUpdated = await _detailingOrderService.CompleteUpdateDetailingOrderAsync(detailingOrder, user.Id);
+            await notificationCenterService.CreateNotificationAsync("Машина: " + detailingOrder.Car.Name + " " + detailingOrder.ModelCar.Name + ". \nГос номер: " + detailingOrder.CarNumber + ". \nНомер клиента: " + detailingOrder.PhoneNumber, user.Id, "Заказ-наряд завершен✅");
             if (hasUpdated)
             {
                 return StatusCode(201, "There were incomplete services. Detailing order updated and completed.");
@@ -285,7 +288,44 @@ namespace AvtoMigBussines.Detailing.Controllers
             var summOfWashServices = await _washService.GetSummAllServices(id);
             return Ok(summOfWashServices); ПОЛУЧЕНИЕ СУММЫ ДЛЯ ЗАКАЗ-НАРЯДА
         }*/
+        [HttpGet("GetInfoPaymentForDetailingOrder")]
+        public async Task<IActionResult> GetInfoPaymentForDetailingOrder([Required] int id)
+        {
+            var payment = await washOrderTransactionService.GetDetailingOrderTransactionByIdAsync(id);
+            return Ok(payment);
+        }
 
+        [HttpPost("CreateDetailingOrder")]
+        public async Task<IActionResult> CreateDetailingOrder([FromBody] DetailingOrder detailingOrder)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null)
+            {
+                return Unauthorized(new { Message = "User is not authenticated." });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _detailingOrderService.CreateDetailingOrderAsync(detailingOrder, user.Id);
+                await notificationCenterService.CreateNotificationAsync($"Создан новый заказ-наряд.\nГос номер: {detailingOrder.CarNumber}", user.Id, "Машина приехала на детейлинг🔧");
+
+                return Ok(detailingOrder);
+            }
+            catch (CustomException.WashOrderExistsException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "An error occurred while creating the wash order.");
+                return StatusCode(500, new { Message = "An error occurred while processing your request." + ex.Message });
+            }
+        }
         [HttpPost("CreateOrder")]
         public async Task<IActionResult> CreateOrder([FromBody] DetailingOrder order)
         {
@@ -301,8 +341,8 @@ namespace AvtoMigBussines.Detailing.Controllers
             }
             try
             {
+                await notificationCenterService.CreateNotificationAsync($"Машина приехала на детейлинг🔧. Гос номер: {order.CarNumber}", user.Id, "Создан новый заказ-наряд");
                 await _detailingOrderService.CreateDetailingOrderAsync(order, user.Id);
-
 
                 return Ok(order);
             }
