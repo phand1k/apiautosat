@@ -22,7 +22,7 @@ namespace AvtoMigBussines.CarWash.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Директор")]
+    [Authorize(Roles = "Директор, Администратор, Мастер")]
     [CheckSubscription]
     public class DirectorController : Controller
     {

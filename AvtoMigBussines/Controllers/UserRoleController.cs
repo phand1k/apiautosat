@@ -13,7 +13,6 @@ namespace AvtoMigBussines.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Директор")]
     public class UserRoleController : Controller
     {
         private ApplicationDbContext _context;
@@ -35,6 +34,7 @@ namespace AvtoMigBussines.Controllers
                 Where(x=>x.OrganizationId == GetCurrentUserAsync().Result.OrganizationId).ToListAsync();
             return Ok(users);
         }
+        [Authorize(Roles = "Директор, Администратор")]
         [HttpPatch("EditUserRole")]
         public async Task<IActionResult> EditUserRole([Required] string userId, [Required] string roleId)
         {
@@ -71,7 +71,6 @@ namespace AvtoMigBussines.Controllers
 
             return Ok(new { Message = "User role updated successfully" });
         }
-
         [HttpGet("GetRoles")]
         public async Task<IActionResult> GetRoles()
         {
@@ -79,6 +78,7 @@ namespace AvtoMigBussines.Controllers
             return Ok(roles);
         }
         [HttpGet("GetUsersWithRoles")]
+
         public async Task<ActionResult<IEnumerable<UserRoleDTO>>> GetUsersWithRoles()
         {
             var users = userManager.Users.Where(x=>x.OrganizationId == GetCurrentUserAsync().Result.OrganizationId && x.IsDeleted == false).ToList();

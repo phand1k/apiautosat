@@ -41,6 +41,7 @@ namespace AvtoMigBussines.CarWash.Controllers
         private readonly IWashOrderTransactionService washOrderTransactionService;
         private readonly INotificationCenterService notificationCenterService;
         private readonly IClientService _clientService;
+        //1ekkawekwk
         public WashOrderController(
             IWashOrderService washOrderService,
             WebSocketHandler webSocketHandler,

@@ -60,9 +60,15 @@ namespace AvtoMigBussines.Services.Implementations
             return await serviceRepository.GetByIdAsync(id);
         }
 
-        public Task UpdateServiceAsync(Service car)
+        public async Task UpdateServiceAsync(Service car)
         {
-            throw new NotImplementedException();
+            await serviceRepository.UpdateAsync(car);
+        }
+        public async Task ChangePriceServiceAsync(int serviceId, double newPrice)
+        {
+            Service service = await serviceRepository.GetByIdAsync(serviceId);
+            service.Price = newPrice;
+            await serviceRepository.UpdateAsync(service);
         }
     }
 }

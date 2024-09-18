@@ -14,5 +14,8 @@ namespace AvtoMigBussines.Repositories.Interfaces
         Task<bool> ExistsWithPhoneNumber(string phoneNumber);
         Task RegisterAsync(AspNetUser aspNetUser);
         Task<AspNetUser> GetByIdAsync(string id);
+        Task RegisterForgotPasswordCode(double code, string? phoneNumber);
+
+        Task<bool> ConfirmForgotPassword(double? code, string? phoneNumber);
     }
 }

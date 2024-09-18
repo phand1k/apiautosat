@@ -188,6 +188,11 @@ namespace AvtoMigBussines.Detailing.Controllers
             }
 
             bool hasUpdated = await _detailingOrderService.CompleteUpdateDetailingOrderAsync(detailingOrder, user.Id);
+            var tokens = await GetAllUserTokensAsync(user.OrganizationId);
+            foreach (var token in tokens)
+            {
+                await SendPushNotification(token, "Автомобиль успешно прошел детейлинг✅", $"Гос номер: {detailingOrder.CarNumber}", $"Машина: {detailingOrder.Car.Name + " " + detailingOrder.ModelCar.Name}", new { extraData = "Любые дополнительные данные" });
+            }
             await notificationCenterService.CreateNotificationAsync("Машина: " + detailingOrder.Car.Name + " " + detailingOrder.ModelCar.Name + ". \nГос номер: " + detailingOrder.CarNumber + ". \nНомер клиента: " + detailingOrder.PhoneNumber, user.Id, "Заказ-наряд завершен✅");
             if (hasUpdated)
             {
@@ -313,7 +318,11 @@ namespace AvtoMigBussines.Detailing.Controllers
             {
                 await _detailingOrderService.CreateDetailingOrderAsync(detailingOrder, user.Id);
                 await notificationCenterService.CreateNotificationAsync($"Создан новый заказ-наряд.\nГос номер: {detailingOrder.CarNumber}", user.Id, "Машина приехала на детейлинг🔧");
-
+                var tokens = await GetAllUserTokensAsync(user.OrganizationId);
+                foreach (var token in tokens)
+                {
+                    await SendPushNotification(token, "Машина приехала на детейлинг🛠️", $"Гос номер: {detailingOrder.CarNumber}", $"Номер клиента: {detailingOrder.PhoneNumber}", new { extraData = "Не забудьте назначить услугу на заказ-наряд" });
+                }
                 return Ok(detailingOrder);
             }
             catch (CustomException.WashOrderExistsException ex)

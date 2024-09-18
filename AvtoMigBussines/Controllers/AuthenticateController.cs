@@ -27,6 +27,38 @@ namespace AvtoMigBussines.Controllers
             this.userManager = userManager;
             this.context = context;
         }
+        [HttpPost("ConfirmResetPasswordCode")]
+        public async Task<IActionResult> ConfirmResetPasswordCode(double? code, string? phoneNumber)
+        {
+            try
+            {
+                // Проверяем код и получаем JWT токен после успешной проверки
+                var token = await userService.ConfirmResetPasswordCodeAndGenerateToken(code, phoneNumber);
+                return Ok(new { Token = token });
+            }
+            catch (ArgumentException ex)
+            {
+                return Unauthorized(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(string? phoneNumber)
+        {
+            try
+            {
+                await userService.ResetPassword(phoneNumber);
+                return Ok("Код для сброса пароля был отправлен.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [Authorize]
         [HttpGet("InviteUser")]

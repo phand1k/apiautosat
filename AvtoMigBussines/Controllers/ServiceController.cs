@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Text;
+using Telegram.Bot.Types;
 
 namespace AvtoMigBussines.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [CheckSubscription]
     public class ServiceController : Controller
     {
         private readonly IWashOrderService _washOrderService;
@@ -132,6 +132,29 @@ namespace AvtoMigBussines.Controllers
 
             await _serviceService.DeleteServiceAsync(service.Id);
             return Ok(service);
+        }
+        [HttpPatch("ChangePrice")]
+        public async Task<IActionResult> ChangePrice(int serviceId, double newPrice)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                await _serviceService.ChangePriceServiceAsync(serviceId, newPrice);
+                return Ok();
+            }
+            catch (CustomException.ServiceExistsException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // _logger.LogError(ex, "An error occurred while creating the service.");
+                return StatusCode(500, new { Message = "An error occurred while processing your request." });
+            }
+
         }
         [HttpPost("CreateService")]
         public async Task<IActionResult> CreateService([FromBody] Service service)

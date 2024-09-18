@@ -44,9 +44,10 @@ namespace AvtoMigBussines.Repositories.Implementations
             return await context.Services.FirstOrDefaultAsync(x=>x.Id == id);
         }
 
-        public Task UpdateAsync(Service service)
+        public async Task UpdateAsync(Service service)
         {
-            throw new NotImplementedException();
+            context.Services.Update(service);
+            await context.SaveChangesAsync();
         }
     }
 }

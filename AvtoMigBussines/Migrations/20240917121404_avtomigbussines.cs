@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace AvtoMigBussines.Migrations
 {
-    public partial class AvtoMigBussines : Migration
+    public partial class avtomigbussines : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -52,6 +52,22 @@ namespace AvtoMigBussines.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Clients", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ForgotPasswordCodes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<double>(type: "float", maxLength: 4, nullable: true),
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DateOfEnd = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ForgotPasswordCodes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -349,7 +365,7 @@ namespace AvtoMigBussines.Migrations
                     CarNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     OrganizationId = table.Column<int>(type: "int", nullable: true),
-                    EndOfOrderAspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EndOfOrderAspNetUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Prepayment = table.Column<double>(type: "float", nullable: true),
                     DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -368,6 +384,11 @@ namespace AvtoMigBussines.Migrations
                     table.ForeignKey(
                         name: "FK_DetailingOrders_AspNetUsers_AspNetUserId",
                         column: x => x.AspNetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_DetailingOrders_AspNetUsers_EndOfOrderAspNetUserId",
+                        column: x => x.EndOfOrderAspNetUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -764,6 +785,11 @@ namespace AvtoMigBussines.Migrations
                 column: "CarId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DetailingOrders_EndOfOrderAspNetUserId",
+                table: "DetailingOrders",
+                column: "EndOfOrderAspNetUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DetailingOrders_ModelCarId",
                 table: "DetailingOrders",
                 column: "ModelCarId");
@@ -972,6 +998,9 @@ namespace AvtoMigBussines.Migrations
 
             migrationBuilder.DropTable(
                 name: "DetailingServices");
+
+            migrationBuilder.DropTable(
+                name: "ForgotPasswordCodes");
 
             migrationBuilder.DropTable(
                 name: "NotifiactionTokens");

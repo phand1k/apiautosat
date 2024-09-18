@@ -49,6 +49,7 @@ namespace AvtoMigBussines.CarWash.Services.Implementations
         {
             return await washOrderTransactionRepository.GetByIdAsync(id);
         }
+        //qejqwkeqwke
         public async Task<DetailingOrderTransaction> GetDetailingOrderTransactionByIdAsync(int id)
         {
             return await washOrderTransactionRepository.GetDetailingOrderTransactionById(id);

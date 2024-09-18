@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AvtoMigBussines.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240904143905_AvtoMigBussines")]
-    partial class AvtoMigBussines
+    [Migration("20240917121404_avtomigbussines")]
+    partial class avtomigbussines
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -371,7 +371,7 @@ namespace AvtoMigBussines.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("EndOfOrderAspNetUserId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool?>("IsDeleted")
                         .HasColumnType("bit");
@@ -402,6 +402,8 @@ namespace AvtoMigBussines.Migrations
                     b.HasIndex("AspNetUserId");
 
                     b.HasIndex("CarId");
+
+                    b.HasIndex("EndOfOrderAspNetUserId");
 
                     b.HasIndex("ModelCarId");
 
@@ -600,6 +602,33 @@ namespace AvtoMigBussines.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("AvtoMigBussines.Models.ForgotPasswordCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<double?>("Code")
+                        .HasMaxLength(4)
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("DateOfCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ForgotPasswordCodes");
                 });
 
             modelBuilder.Entity("AvtoMigBussines.Models.ModelCar", b =>
@@ -1086,6 +1115,10 @@ namespace AvtoMigBussines.Migrations
                         .WithMany()
                         .HasForeignKey("CarId");
 
+                    b.HasOne("AvtoMigBussines.Authenticate.AspNetUser", "EndOfOrderAspNetUser")
+                        .WithMany()
+                        .HasForeignKey("EndOfOrderAspNetUserId");
+
                     b.HasOne("AvtoMigBussines.Models.ModelCar", "ModelCar")
                         .WithMany()
                         .HasForeignKey("ModelCarId");
@@ -1097,6 +1130,8 @@ namespace AvtoMigBussines.Migrations
                     b.Navigation("AspNetUser");
 
                     b.Navigation("Car");
+
+                    b.Navigation("EndOfOrderAspNetUser");
 
                     b.Navigation("ModelCar");
 

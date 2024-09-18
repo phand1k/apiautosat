@@ -31,6 +31,10 @@ namespace AvtoMigBussines.Services.Implementations
         {
             return await userRepository.GetByIdAsync(id);
         }
+        public async Task<bool> ConfirmCode(double? code, string? phoneNumber)
+        {
+            return await userRepository.ConfirmForgotPassword(code, phoneNumber);
+        }
         public async Task<AspNetUser> GetUserByPhoneNumberAsync(string phoneNumber)
         {
             return await userRepository.GetByPhoneNumberAsync(phoneNumber);
@@ -85,6 +89,48 @@ namespace AvtoMigBussines.Services.Implementations
             var result = await userManager.CreateAsync(aspNetUser, model.Password);
             await userManager.AddToRoleAsync(aspNetUser, "Мастер");
         }
+
+        public async Task<string> ConfirmResetPasswordCodeAndGenerateToken(double? code, string? phoneNumber)
+        {
+            // Проверяем, существует ли уже пользователь с таким номером телефона
+            var user = await userManager.FindByNameAsync(phoneNumber);
+            if (user == null || user.IsDeleted == true)
+            {
+                throw new ArgumentException("Invalid username or user is deleted.");
+            }
+
+            // Проверяем корректность кода
+            if (!await userRepository.ConfirmForgotPassword(code, phoneNumber))
+            {
+                throw new Exception("Неправильный код");
+            }
+
+            // Получаем роли пользователя
+            var userRoles = await userManager.GetRolesAsync(user);
+
+            // Формируем список авторизационных клеймов
+            var authClaims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id)
+    };
+
+            // Добавляем роли в клеймы
+            foreach (var userRole in userRoles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+
+            if (user.OrganizationId.HasValue)
+            {
+                authClaims.Add(new Claim("OrganizationId", user.OrganizationId.Value.ToString()));
+            }
+
+            // Генерация JWT токена
+            var token = GetToken(authClaims, user.Id, user.OrganizationId);
+            return token;
+        }
         public async Task<string> LoginUserAsync(LoginModel model)
         {
             var user = await userManager.FindByEmailAsync(model.PhoneNumber);
@@ -135,6 +181,53 @@ namespace AvtoMigBussines.Services.Implementations
 
             var tokenHandler = new JwtSecurityTokenHandler();
             return tokenHandler.WriteToken(token); // Сериализует объект JwtSecurityToken в строку
+        }
+        public async Task<bool> ConfirmResetPasswordCode(double? code, string? phoneNumber)
+        {
+            // Проверяем, существует ли уже пользователь с таким номером телефона
+            if (await userRepository.ConfirmForgotPassword(code, phoneNumber) == false)
+            {
+                throw new Exception("Code wrong");
+            }
+
+            return true;
+        }
+        public async Task ResetPassword(string? phoneNumber)
+        {
+            var user = await userManager.FindByNameAsync(phoneNumber);
+            if (user == null || user.IsDeleted == true)
+            {
+                throw new ArgumentException("Invalid username or password.");
+            }
+            using (var httpClient = new HttpClient())
+            {
+                // Ваш API-ключ
+                string apiKey = "kz25d936dcadf4d4b9a77c4c4d3bb8f7864809e554b3c1e930e0ac3ef2e7d2973d1223";
+                Random rnd = new Random();
+                double code = rnd.Next(1000, 9999);
+                // Подготовка URL запроса
+                await userRepository.RegisterForgotPasswordCode(code, phoneNumber);
+                string requestUrl = $"https://api.mobizon.kz/service/message/sendsmsmessage?recipient={phoneNumber}&from=&text=Код для сброса пароля AutoSat: {code} \nКод действует в течении 20 минут&apiKey={apiKey}";
+
+                try
+                {
+                    // Отправка GET запроса
+                    HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
+                    response.EnsureSuccessStatusCode(); // Выбросит исключение, если статус не 2xx
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    // Здесь можно обработать успешный ответ, если нужно
+                    
+                    Console.WriteLine("SMS успешно отправлено."+responseBody);
+                }
+                catch (HttpRequestException e)
+                {
+                    // Обработка ошибок
+                    Console.WriteLine($"Ошибка при отправке SMS: {e.Message}");
+                    throw;
+                }
+            }
         }
 
     }

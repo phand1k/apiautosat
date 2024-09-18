@@ -30,7 +30,7 @@ namespace AvtoMigBussines.Repositories.Implementations
 
         public async Task<IEnumerable<NotificationCenter>> GetAllAsync(int? organizationId)
         {
-            return await context.NotificationCenters.Where(p => p.IsDeleted == false && p.OrganizationId == organizationId).ToListAsync();
+            return await context.NotificationCenters.OrderByDescending(x=>x.DateOfCreated).Where(p => p.IsDeleted == false && p.OrganizationId == organizationId).ToListAsync();
         }
 
         public async Task<NotificationCenter> GetByIdAsync(int id)
