@@ -30,6 +30,8 @@ namespace AvtoMigBussines.Detailing.Models
         public double? Salary { get; set; }
         public DateTime? DateOfCompleteService { get; set; } = DateTime.UtcNow;
         public string? Comment { get; set; }
+
+        public string ActionType => "DetailingService";
         public DetailingService()
         {
             var timeZone = DateTimeZoneProviders.Tzdb["Asia/Almaty"];

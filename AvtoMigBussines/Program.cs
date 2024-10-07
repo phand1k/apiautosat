@@ -65,7 +65,7 @@ builder.Services.AddScoped<ITypeOfOrganizationService, TypeOfOrganizationService
 builder.Services.AddScoped<ITypeOfOrganizationRepository,  TypeOfOrganizationRepository>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<ICacheService, CacheService>();
-
+builder.Services.AddScoped<IWhatsappSenderService, WhatsappSenderService>();
 builder.Services.AddScoped<IDetailingPriceListRepository, DetailingPriceListRepository>();
 builder.Services.AddScoped<IDetailingPriceListService, DetailingPriceListService>();
 

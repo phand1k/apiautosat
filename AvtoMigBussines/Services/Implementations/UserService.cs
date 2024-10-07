@@ -8,6 +8,7 @@ using AvtoMigBussines.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using RestSharp;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -192,6 +193,48 @@ namespace AvtoMigBussines.Services.Implementations
 
             return true;
         }
+        public async Task ResetPasswordWithWhatsapp(string? phoneNumber)
+        {
+            var user = await userManager.FindByNameAsync(phoneNumber);
+            if (user == null || user.IsDeleted == true)
+            {
+                throw new ArgumentException("Invalid username or password.");
+            }
+            try
+            {
+                var url = "https://api.ultramsg.com/instance95613/messages/chat";
+                var client = new RestClient(url);
+
+                var request = new RestRequest(url, Method.Post);
+                request.AddHeader("content-type", "application/x-www-form-urlencoded");
+                request.AddParameter("token", "pt12bzpf9g1votn1");
+                request.AddParameter("to", "%" + phoneNumber);
+                Random rnd = new Random();
+                double code = rnd.Next(1000, 9999);
+                request.AddParameter("body", "Ваш код подтверждения AutoSat: " + code);
+                await userRepository.RegisterForgotPasswordCode(code, phoneNumber);
+
+                RestResponse response = await client.ExecuteAsync(request);
+                var output = response.Content;
+
+                if (response.IsSuccessful)
+                {
+                    Console.WriteLine("Whatsapp sms успешно отправлено.");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new Exception("Bad request");
+                }
+                else
+                {
+                    throw new Exception("Server exception");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error"+ex.Message);
+            }
+        }
         public async Task ResetPassword(string? phoneNumber)
         {
             var user = await userManager.FindByNameAsync(phoneNumber);
@@ -229,6 +272,7 @@ namespace AvtoMigBussines.Services.Implementations
                 }
             }
         }
+
 
     }
 }

@@ -2,6 +2,7 @@
 using AvtoMigBussines.Models;
 using AvtoMigBussines.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace AvtoMigBussines.Repositories.Implementations
 {
@@ -18,9 +19,17 @@ namespace AvtoMigBussines.Repositories.Implementations
             await context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int actionId, string actionType)
         {
-            throw new NotImplementedException();
+            var notifications = context.NotificationCenters
+            .Where(n => n.ActionId == actionId && n.ActionType == actionType)
+            .ToList();
+            foreach (var notification in notifications)
+            {
+                notification.IsDeleted = true;
+            }
+
+            await context.SaveChangesAsync();
         }
 
         public async Task<bool> ExistsWithName(string name)
@@ -35,12 +44,13 @@ namespace AvtoMigBussines.Repositories.Implementations
 
         public async Task<NotificationCenter> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await context.NotificationCenters.FirstOrDefaultAsync(p => p.Id == id && p.IsDeleted == false);
         }
 
         public async Task UpdateAsync(NotificationCenter notificationCenter)
         {
-            throw new NotImplementedException();
+            context.NotificationCenters.Update(notificationCenter);
+            await context.SaveChangesAsync();
         }
     }
 }

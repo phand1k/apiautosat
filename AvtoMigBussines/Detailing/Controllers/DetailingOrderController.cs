@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using Telegram.Bot.Types;
 
 namespace AvtoMigBussines.Detailing.Controllers
 {
@@ -32,7 +33,8 @@ namespace AvtoMigBussines.Detailing.Controllers
         private readonly ApplicationDbContext context;
         private readonly INotificationCenterService notificationCenterService;
         private readonly IWashOrderTransactionService washOrderTransactionService;
-        public DetailingOrderController(UserManager<AspNetUser> userManager, IDetailingOrderService _detailingOrderService, IDetailingServiceService detailingService, ApplicationDbContext context , INotificationCenterService notificationCenterService, IWashOrderTransactionService washOrderTransactionService)
+        private readonly IWhatsappSenderService whatsappSenderService;
+        public DetailingOrderController(UserManager<AspNetUser> userManager, IDetailingOrderService _detailingOrderService, IDetailingServiceService detailingService, ApplicationDbContext context , INotificationCenterService notificationCenterService, IWashOrderTransactionService washOrderTransactionService, IWhatsappSenderService whatsappSenderService)
         {
             _userManager = userManager;
             this._detailingOrderService = _detailingOrderService;
@@ -40,6 +42,16 @@ namespace AvtoMigBussines.Detailing.Controllers
             this.context = context;
             this.notificationCenterService = notificationCenterService;
             this.washOrderTransactionService = washOrderTransactionService;
+            this.whatsappSenderService = whatsappSenderService;
+        }
+        private async Task<IEnumerable<string>> GetAllTokens()
+        {
+            var tokens = await context.NotifiactionTokens
+                .GroupBy(x => x.Token)
+                .Select(g => g.OrderByDescending(x => x.DateOfCreated).First().Token)
+                .ToListAsync();
+
+            return tokens;
         }
         private async Task<IEnumerable<string>> GetAllUserTokensAsync(int? organizationId)
         {
@@ -149,6 +161,7 @@ namespace AvtoMigBussines.Detailing.Controllers
             {
                 return NotFound("Detailing Order not found");
             }
+            await notificationCenterService.DeleteNotificationAsync(id, "DetailingOrder");
             await _detailingOrderService.DeleteUpdateDetailingOrderAsync(detailingOrder);
             return Ok();
         }
@@ -193,7 +206,7 @@ namespace AvtoMigBussines.Detailing.Controllers
             {
                 await SendPushNotification(token, "Автомобиль успешно прошел детейлинг✅", $"Гос номер: {detailingOrder.CarNumber}", $"Машина: {detailingOrder.Car.Name + " " + detailingOrder.ModelCar.Name}", new { extraData = "Любые дополнительные данные" });
             }
-            await notificationCenterService.CreateNotificationAsync("Машина: " + detailingOrder.Car.Name + " " + detailingOrder.ModelCar.Name + ". \nГос номер: " + detailingOrder.CarNumber + ". \nНомер клиента: " + detailingOrder.PhoneNumber, user.Id, "Заказ-наряд завершен✅");
+            await notificationCenterService.CreateNotificationAsync("Машина: " + detailingOrder.Car.Name + " " + detailingOrder.ModelCar.Name + ". \nГос номер: " + detailingOrder.CarNumber + ". \nНомер клиента: " + detailingOrder.PhoneNumber, user.Id, "Заказ-наряд завершен✅", detailingOrder.Id, "DetailingOrder");
             if (hasUpdated)
             {
                 return StatusCode(201, "There were incomplete services. Detailing order updated and completed.");
@@ -204,6 +217,16 @@ namespace AvtoMigBussines.Detailing.Controllers
             }
         }
 
+        [HttpGet("ReadyDetailingOrder")]
+        public async Task<IActionResult> ReadyDetailingOrder([Required] int detailingOrderId)
+        {
+            var detailingOrder = await _detailingOrderService.GetDetailingOrderByIdAsync(detailingOrderId);
+            if (detailingOrder == null)
+            {
+                return NotFound();
+            }
+            return Ok();
+        }
 
         [HttpGet("AllNotCompletedOrders")]
         public async Task<IActionResult> AllNotCompletedOrders()
@@ -293,13 +316,34 @@ namespace AvtoMigBussines.Detailing.Controllers
             var summOfWashServices = await _washService.GetSummAllServices(id);
             return Ok(summOfWashServices); ПОЛУЧЕНИЕ СУММЫ ДЛЯ ЗАКАЗ-НАРЯДА
         }*/
+
+        
         [HttpGet("GetInfoPaymentForDetailingOrder")]
         public async Task<IActionResult> GetInfoPaymentForDetailingOrder([Required] int id)
         {
             var payment = await washOrderTransactionService.GetDetailingOrderTransactionByIdAsync(id);
             return Ok(payment);
         }
-
+        [HttpGet("NotifyAllUsers")]
+        public async Task<IActionResult> NotifyAllUsers(string? title, string? body)
+        {
+            var tokens = await GetAllTokens();
+            foreach (var token in tokens)
+            {
+                await SendPushNotification(token, "Не забудьте завершить заказы✅", $"Не забывайте вовремя принимать и завершать заказ-наряды", $"Ведь так будет порядок в учете и не только😉", new { extraData = "Не забудьте назначить услугу на заказ-наряд" });
+            }
+            return Ok();
+        }
+        [HttpGet("GoodMorningNotify")]
+        public async Task<IActionResult> GoodMorningNotify(string? title, string? body)
+        {
+            var tokens = await GetAllTokens();
+            foreach (var token in tokens)
+            {
+                await SendPushNotification(token, "Упс, кажется вы что-то пропустили!", $"", $"Управляйте услугами и зарплатами в детейлинг центре прямо с телефона. Время действовать!", new { extraData = "Не забудьте назначить услугу на заказ-наряд" });
+            }
+            return Ok();
+        }
         [HttpPost("CreateDetailingOrder")]
         public async Task<IActionResult> CreateDetailingOrder([FromBody] DetailingOrder detailingOrder)
         {
@@ -316,8 +360,9 @@ namespace AvtoMigBussines.Detailing.Controllers
 
             try
             {
+
                 await _detailingOrderService.CreateDetailingOrderAsync(detailingOrder, user.Id);
-                await notificationCenterService.CreateNotificationAsync($"Создан новый заказ-наряд.\nГос номер: {detailingOrder.CarNumber}", user.Id, "Машина приехала на детейлинг🔧");
+                await notificationCenterService.CreateNotificationAsync($"Создан новый заказ-наряд.\nГос номер: {detailingOrder.CarNumber}", user.Id, "Машина приехала на детейлинг🔧", detailingOrder.Id, "DetailingOrder");
                 var tokens = await GetAllUserTokensAsync(user.OrganizationId);
                 foreach (var token in tokens)
                 {
@@ -350,7 +395,7 @@ namespace AvtoMigBussines.Detailing.Controllers
             }
             try
             {
-                await notificationCenterService.CreateNotificationAsync($"Машина приехала на детейлинг🔧. Гос номер: {order.CarNumber}", user.Id, "Создан новый заказ-наряд");
+                await notificationCenterService.CreateNotificationAsync($"Машина приехала на детейлинг🔧. Гос номер: {order.CarNumber}", user.Id, "Создан новый заказ-наряд", order.Id, "DetailingOrder");
                 await _detailingOrderService.CreateDetailingOrderAsync(order, user.Id);
 
                 return Ok(order);

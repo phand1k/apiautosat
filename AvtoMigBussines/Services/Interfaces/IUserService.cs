@@ -15,6 +15,7 @@ namespace AvtoMigBussines.Services.Interfaces
         Task RegisterUserAsync(RegisterModel model);
 
         Task ResetPassword(string? phoneNumber);
+        Task ResetPasswordWithWhatsapp(string? phoneNumber);
         Task<bool> ConfirmCode(double? code, string? phoneNumber);
 
         Task<string> ConfirmResetPasswordCodeAndGenerateToken(double? code, string? phoneNumber);

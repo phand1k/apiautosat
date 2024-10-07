@@ -97,7 +97,9 @@ namespace AvtoMigBussines.Migrations
                     AspNetUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     OrganizationId = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: true),
-                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    DateOfCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ActionId = table.Column<int>(type: "int", nullable: true),
+                    ActionType = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

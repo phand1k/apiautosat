@@ -15,7 +15,7 @@ namespace AvtoMigBussines.Services.Implementations
             this.notificationCenterRepository = notificationCenterRepository;
             this.userManager = userManager;
         }
-        public async Task<bool> CreateNotificationAsync(string? message, string? aspNetUserId, string? title)
+        public async Task<bool> CreateNotificationAsync(string? message, string? aspNetUserId, string? title, int actionId, string actionType)
         {
             NotificationCenter notification = new NotificationCenter();
             var user = await userManager.FindByIdAsync(aspNetUserId);
@@ -23,13 +23,15 @@ namespace AvtoMigBussines.Services.Implementations
             notification.Title = title;
             notification.Description = message;
             notification.AspNetUserId = aspNetUserId;
+            notification.ActionId = actionId;
+            notification.ActionType = actionType;
             await notificationCenterRepository.AddAsync(notification);
             return true;
         }
 
-        public Task DeleteNotificationAsync(int id)
+        public async Task DeleteNotificationAsync(int actionId, string actionType)
         {
-            throw new NotImplementedException();
+            await notificationCenterRepository.DeleteAsync(actionId, actionType);
         }
 
         public async Task<IEnumerable<NotificationCenter>> GetAllNotificationsAsync(int? organizationId)
@@ -37,14 +39,14 @@ namespace AvtoMigBussines.Services.Implementations
             return await notificationCenterRepository.GetAllAsync(organizationId);
         }
 
-        public Task<NotificationCenter> GetNotificationByIdAsync(int id)
+        public async Task<NotificationCenter> GetNotificationByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await notificationCenterRepository.GetByIdAsync(id);
         }
 
-        public Task UpdateNotificationAsync(NotificationCenter notification)
+        public async Task UpdateNotificationAsync(NotificationCenter notification)
         {
-            throw new NotImplementedException();
+            await notificationCenterRepository.UpdateAsync(notification);
         }
     }
 }

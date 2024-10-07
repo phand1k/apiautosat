@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RestSharp;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using static AvtoMigBussines.Exceptions.CustomException;
@@ -51,7 +52,21 @@ namespace AvtoMigBussines.Controllers
         {
             try
             {
-                await userService.ResetPassword(phoneNumber);
+                await userService.ResetPasswordWithWhatsapp(phoneNumber);
+                return Ok("Код для сброса пароля был отправлен.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("ResetPasswordWithWhatsapp")]
+        public async Task<IActionResult> ResetPasswordWithWhatsapp(string? phoneNumber)
+        {
+            try
+            {
+                await userService.ResetPasswordWithWhatsapp(phoneNumber);
                 return Ok("Код для сброса пароля был отправлен.");
             }
             catch (ArgumentException ex)
@@ -81,6 +96,7 @@ namespace AvtoMigBussines.Controllers
             var inviteUrl = "https://gchelper.kz/invite-user.html?organizationId=" + user.Organization.Number;
             return Ok(inviteUrl);
         }
+
         [Authorize]
         [HttpGet("CheckUserFullName")]
         public async Task<IActionResult> CheckUserFullName()
@@ -92,6 +108,7 @@ namespace AvtoMigBussines.Controllers
             }
             return Ok();
         }
+
         [Authorize]
         [HttpPatch("DeleteUser")]
         public async Task<IActionResult> DeleteUser(string? id)
@@ -99,6 +116,7 @@ namespace AvtoMigBussines.Controllers
             await userService.DeleteUserAsync(id);
             return Ok("Succes for delete user: " + id);
         }
+
         private async Task<AspNetUser> GetCurrentUserAsync()
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
@@ -116,6 +134,7 @@ namespace AvtoMigBussines.Controllers
             var user = await userManager.FindByIdAsync(aspNetUser.Id);
             return user;
         }
+
         [HttpGet]
         [Authorize]
         [Route("GetRole")]

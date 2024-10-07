@@ -3,6 +3,7 @@ using AvtoMigBussines.CarWash.Models;
 using AvtoMigBussines.CarWash.Services.Implementations;
 using AvtoMigBussines.CarWash.Services.Interfaces;
 using AvtoMigBussines.Data;
+using AvtoMigBussines.Detailing.Models;
 using AvtoMigBussines.DTOModels;
 using AvtoMigBussines.Exceptions;
 using AvtoMigBussines.Services.Implementations;
@@ -41,6 +42,7 @@ namespace AvtoMigBussines.CarWash.Controllers
         private readonly IWashOrderTransactionService washOrderTransactionService;
         private readonly INotificationCenterService notificationCenterService;
         private readonly IClientService _clientService;
+        private readonly IWhatsappSenderService whatsappSenderService;
         //1ekkawekwk
         public WashOrderController(
             IWashOrderService washOrderService,
@@ -54,7 +56,8 @@ namespace AvtoMigBussines.CarWash.Controllers
             ISalarySettingService salarySettingService,
             IWashOrderTransactionService washOrderTransactionService,
             INotificationCenterService notificationCenterService,
-            IClientService clientService)
+            IClientService clientService,
+            IWhatsappSenderService whatsappSenderService)
         {
             _washOrderService = washOrderService;
             _webSocketHandler = webSocketHandler;
@@ -68,6 +71,7 @@ namespace AvtoMigBussines.CarWash.Controllers
             this.washOrderTransactionService = washOrderTransactionService;
             this.notificationCenterService = notificationCenterService;
             _clientService = clientService;
+            this.whatsappSenderService = whatsappSenderService;
         }
         //Actions with push notification, get current user etc
         //Действия с получением текущего пользователя, отправка уведомлений и т.д.
@@ -386,8 +390,8 @@ namespace AvtoMigBussines.CarWash.Controllers
             {
                 await SendPushNotification(token, "Машина помыта✅", $"Гос номер: {washOrder.CarNumber}", $"Машина: {washOrder.Car.Name + " " + washOrder.ModelCar.Name}", new { extraData = "Любые дополнительные данные" });
             }
-            await notificationCenterService.CreateNotificationAsync("Машина: " + washOrder.Car.Name + " " + washOrder.ModelCar.Name + ". \nГос номер: " + washOrder.CarNumber + ". \nНомер клиента: " + washOrder.PhoneNumber, user.Id, "Заказ-наряд завершен");
-
+            await notificationCenterService.CreateNotificationAsync("Машина: " + washOrder.Car.Name + " " + washOrder.ModelCar.Name + ". \nГос номер: " + washOrder.CarNumber + ". \nНомер клиента: " + washOrder.PhoneNumber, user.Id, "Заказ-наряд завершен", washOrder.Id, "DetailingOrder");
+            await whatsappSenderService.SendMessage(washOrder.PhoneNumber, "Ваша машина: " + washOrder.CarNumber + " помыта✅");
             return StatusCode(200, "Wash order is ready");
         }
 
@@ -415,7 +419,7 @@ namespace AvtoMigBussines.CarWash.Controllers
             {
                 await SendPushNotification(token, "Машина помыта✅", $"Гос номер: {washOrder.CarNumber}", $"Машина: {washOrder.Car.Name + " " + washOrder.ModelCar.Name}", new { extraData = "Любые дополнительные данные" });
             }
-            await notificationCenterService.CreateNotificationAsync("Машина: " + washOrder.Car.Name + " " + washOrder.ModelCar.Name + ". \nГос номер: " + washOrder.CarNumber + ". \nНомер клиента: " + washOrder.PhoneNumber, user.Id, "Заказ-наряд завершен");
+            await notificationCenterService.CreateNotificationAsync("Машина: " + washOrder.Car.Name + " " + washOrder.ModelCar.Name + ". \nГос номер: " + washOrder.CarNumber + ". \nНомер клиента: " + washOrder.PhoneNumber, user.Id, "Заказ-наряд завершен", washOrder.Id, "DetailingOrder");
 
             if (hasUpdated)
             {
@@ -453,7 +457,7 @@ namespace AvtoMigBussines.CarWash.Controllers
                 {
                     await SendPushNotification(token, "Машина приехала на мойку🌊", $"Гос номер: {washOrder.CarNumber}", $"Номер клиента: {washOrder.PhoneNumber}", new { extraData = "Не забудьте назначить услугу на заказ-наряд" });
                 }
-                await notificationCenterService.CreateNotificationAsync($"Создан новый заказ-наряд. Гос номер: {washOrder.CarNumber}", user.Id, "Создан новый заказ-наряд");
+                await notificationCenterService.CreateNotificationAsync($"Создан новый заказ-наряд. Гос номер: {washOrder.CarNumber}", user.Id, "Создан новый заказ-наряд", washOrder.Id, "DetailingOrder");
 
                 var message = JsonConvert.SerializeObject(new
                 {
@@ -469,7 +473,7 @@ namespace AvtoMigBussines.CarWash.Controllers
                     }
                 });
                 await _webSocketHandler.SendMessageToAllAsync(message);
-
+                await whatsappSenderService.SendMessage(washOrder.PhoneNumber, "Ваша машина: " + washOrder.CarNumber + " принята для мойки✅");
                 return Ok(washOrder);
             }
             catch (CustomException.WashOrderExistsException ex)

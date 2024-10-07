@@ -14,6 +14,8 @@ namespace AvtoMigBussines.Models
         public int? OrganizationId { get; set; }
         public bool? IsDeleted { get; set; } = false;
         public DateTime? DateOfCreated { get; set; } = DateTime.UtcNow;
+        public int? ActionId { get; set; }
+        public string ActionType { get; set; }
         public NotificationCenter() 
         {
             var timeZone = DateTimeZoneProviders.Tzdb["Asia/Almaty"];

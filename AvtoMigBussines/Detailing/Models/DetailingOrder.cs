@@ -1,4 +1,5 @@
 ﻿using AvtoMigBussines.Authenticate;
+using AvtoMigBussines.Interfaces;
 using AvtoMigBussines.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace AvtoMigBussines.Detailing.Models
 {
-    public class DetailingOrder : Order
+    public class DetailingOrder : Order, INotificationAction
     {
         [Required]
         public string? CarNumber { get; set; }
@@ -23,6 +24,8 @@ namespace AvtoMigBussines.Detailing.Models
         public AspNetUser? EndOfOrderAspNetUser { get; set; }
         public string? Comment { get; set; }
         public double? Prepayment { get; set; }
+
+        public string ActionType => "DetailingOrder";
         [NotMapped]
         public string? CreatedByFullName => AspNetUser != null ? $"{AspNetUser.FirstName} {AspNetUser.LastName} {AspNetUser.PhoneNumber}" : null;
 

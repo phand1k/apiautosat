@@ -32,7 +32,8 @@ namespace AvtoMigBussines.Detailing.Controllers
         private readonly ApplicationDbContext context;
         private readonly IDetailingOrderService _detailingOrderService;
         private readonly IServiceService _service;
-        public DetailingServiceController(UserManager<AspNetUser> userManager, IDetailingServiceService detailingServiceService, ILogger<DetailingServiceController> logger, IDetailingPriceListService detailingPriceListService, ApplicationDbContext context, IDetailingOrderService detailingOrderService, IServiceService _service)
+        private readonly INotificationCenterService notificationCenterService;
+        public DetailingServiceController(UserManager<AspNetUser> userManager, IDetailingServiceService detailingServiceService, ILogger<DetailingServiceController> logger, IDetailingPriceListService detailingPriceListService, ApplicationDbContext context, IDetailingOrderService detailingOrderService, IServiceService _service, INotificationCenterService notificationCenterService)
         {
             this.userManager = userManager;
             this.detailingServiceService = detailingServiceService;
@@ -41,6 +42,7 @@ namespace AvtoMigBussines.Detailing.Controllers
             this.context = context;
             _detailingOrderService = detailingOrderService;
             this._service = _service;
+            this.notificationCenterService = notificationCenterService;
         }
 
         private async Task<IEnumerable<string>> GetAllUserTokensAsync(int? organizationId)
@@ -155,6 +157,7 @@ namespace AvtoMigBussines.Detailing.Controllers
             var result = await detailingPriceListService.GetAllServices(serviceId, carId, modelCarId, user.OrganizationId);
             return Ok(result);
         }
+
         [HttpPatch("DeleteWashServiceFromOrder")]
         public async Task<IActionResult> DeleteWashServiceFromOrder(int id)
         {
@@ -165,11 +168,12 @@ namespace AvtoMigBussines.Detailing.Controllers
             }
 
             await detailingServiceService.DeleteDetailingServiceAsync(detailingService.Id);
-
+            await notificationCenterService.DeleteNotificationAsync(detailingService.Id, "WashService");
             // Отправка сообщения по веб-сокету
 
             return Ok(detailingServiceService);
         }
+        
         [HttpGet("AllDetailingServicesOnOrderAsync")]
         public async Task<IActionResult> AllDetailingServicesOnOrderAsync(int? id)
         {
@@ -178,6 +182,7 @@ namespace AvtoMigBussines.Detailing.Controllers
             var detailingServices = await detailingServiceService.GetAllDetailingServicesOnOrder(id, user.Id);
             return Ok(detailingServices);
         }
+
         [HttpPost("CreateDetailingService")]
         public async Task<IActionResult> CreateDetailingService([FromBody] DetailingServiceDTO detailingServiceDTO)
         {
@@ -221,6 +226,7 @@ namespace AvtoMigBussines.Detailing.Controllers
                 await detailingServiceService.CreateDetailingServiceAsync(detailingServiceDTO, user.Id);
                 await detailingPriceListService.CreatePriceListAsync(user.Id, detailingServiceDTO.ServiceId, detailingServiceDTO.DetailingOrderId, detailingServiceDTO.Price);
 
+                await notificationCenterService.CreateNotificationAsync($"На заказ-наряда добавлена услуга.\nУслуга: {detailingServiceDTO.ServiceName}\nАвто: {detailingOrder.Car.Name} {detailingOrder.ModelCar.Name} \nГос номер: {detailingOrder.CarNumber}", user.Id, "На машину назначена услуга🔧", 0, "DetailingService");
                 // Отправляем уведомления
                 var tokens = await GetAllUserTokensAsync(user.OrganizationId);
                 foreach (var token in tokens)
@@ -243,6 +249,7 @@ namespace AvtoMigBussines.Detailing.Controllers
                 return StatusCode(500, new { Message = "An error occurred while processing your request." + ex.Message });
             }
         }
+
 
     }
 }
